@@ -71,7 +71,7 @@ export const UserActivityHistory: React.FC<UserActivityHistoryProps> = ({
       setError(null);
 
       const response = await fetch(
-        `${apiBaseUrl}/api/users/${userId}/activity-history`,
+        `${apiBaseUrl}/api/v1/users/${userId}/activity-history`,
         {
           headers: {
             'Authorization': `Bearer ${authToken}`,

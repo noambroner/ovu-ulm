@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
+import api from './api/axios.config';
 import { Sidebar } from './components/Sidebar/Sidebar';
 import { Dashboard } from './components/Dashboard/Dashboard';
 import { UsersTable } from './components/UsersTable/UsersTable';
@@ -133,9 +133,7 @@ function AppContent() {
       const token = localStorage.getItem('ulm_token');
       if (token) {
         try {
-          const response = await axios.get('/api/v1/auth/me', {
-            headers: { Authorization: `Bearer ${token}` }
-          });
+          const response = await api.get('/api/v1/auth/me');
           setUserInfo(response.data);
           setIsLoggedIn(true);
         } catch (err) {
@@ -156,7 +154,7 @@ function AppContent() {
     setLoading(true);
 
     try {
-      const response = await axios.post('/api/v1/auth/login', {
+      const response = await api.post('/api/v1/auth/login', {
         username: email,
         password: password,
       });

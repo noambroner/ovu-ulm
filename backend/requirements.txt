@@ -26,9 +26,10 @@ jinja2==3.1.2
 redis==5.0.1
 hiredis==2.2.3
 
-# Task Queue
+# Task Queue & Scheduling
 celery==5.3.4
 flower==2.0.1  # Celery monitoring
+apscheduler==3.10.4  # Background scheduler for user status
 
 # Validation & Utils
 email-validator==2.1.0

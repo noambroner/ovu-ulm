@@ -15,6 +15,7 @@ from app.core.config import settings
 from app.core.database import init_db, close_db
 from app.api.v1.router import api_router
 from app.middleware.localization_middleware import LocalizationMiddleware
+from app.core.scheduler import start_scheduler, shutdown_scheduler
 
 # Configure logging
 logging.basicConfig(
@@ -40,6 +41,10 @@ async def lifespan(app: FastAPI):
     await init_db()
     logger.info("Database initialized")
     
+    # Initialize User Status Scheduler
+    start_scheduler()
+    logger.info("User status scheduler initialized")
+    
     # Initialize Redis connection
     # TODO: Initialize Redis
     
@@ -50,6 +55,11 @@ async def lifespan(app: FastAPI):
     
     # Shutdown
     logger.info("Shutting down ULM service")
+    
+    # Shutdown scheduler
+    shutdown_scheduler()
+    logger.info("Scheduler shut down")
+    
     await close_db()
     logger.info("Database connections closed")
 

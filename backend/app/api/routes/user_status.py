@@ -21,7 +21,7 @@ from app.schemas.user_activity import (
 )
 from app.services.user_status_service import UserStatusService
 
-router = APIRouter(prefix="/api/users", tags=["user-status"])
+router = APIRouter(prefix="/users", tags=["user-status"])
 
 
 @router.post("/{user_id}/deactivate", response_model=DeactivationResponse)

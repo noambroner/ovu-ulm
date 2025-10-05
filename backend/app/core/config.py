@@ -64,7 +64,11 @@ class Settings(BaseSettings):
         "http://localhost:8080",
         "https://ulm.ovu.co.il",
         "https://aam.ovu.co.il",
-        "https://ovu.co.il"
+        "https://ovu.co.il",
+        "http://64.176.173.105",
+        "https://ulm-rct.ovu.co.il",
+        "http://64.176.173.105:80",
+        "http://64.176.173.105:8080"
     ]
     
     @validator("BACKEND_CORS_ORIGINS", pre=True)

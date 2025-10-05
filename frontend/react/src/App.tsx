@@ -95,6 +95,9 @@ const translations = {
 };
 
 function AppContent() {
+  // API Configuration
+  const API_URL = import.meta.env.VITE_API_URL || '';
+  
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   const [language, setLanguage] = useState<'he' | 'en'>('he');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -432,7 +435,7 @@ function AppContent() {
                 quickActions={quickActions}
               />
             } />
-            <Route path="/users/all" element={<UsersTable language={language} theme={theme} apiEndpoint="" token={localStorage.getItem("ulm_token") || ""} />} />
+            <Route path="/users/all" element={<UsersTable language={language} theme={theme} apiEndpoint={API_URL} token={localStorage.getItem("ulm_token") || ""} />} />
             <Route path="/users/add" element={<div className="page-placeholder">➕ {t.addUser}</div>} />
             <Route path="/profile" element={<div className="page-placeholder">👤 {t.profile}</div>} />
             <Route path="/manage" element={<ManagePage language={language} theme={theme} />} />

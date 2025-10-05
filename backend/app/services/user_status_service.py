@@ -1,4 +1,5 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from datetime import datetime, timezone
 from typing import Optional, List
 from app.models.user import User
@@ -15,14 +16,16 @@ class UserStatusService:
     """Service for managing user status and activity"""
 
     @staticmethod
-    def create_user_activation(
-        db: Session,
+    async def create_user_activation(
+        db: AsyncSession,
         user_id: int,
         performed_by_id: Optional[int] = None,
         reason: Optional[str] = None
     ) -> UserActivityHistory:
         """Create activation record when a user is created or reactivated"""
-        user = db.query(User).filter(User.id == user_id).first()
+        stmt = select(User).where(User.id == user_id)
+        result = await db.execute(stmt)
+        user = result.scalar_one_or_none()
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
 
@@ -43,19 +46,21 @@ class UserStatusService:
             reason=reason
         )
         db.add(activity)
-        db.commit()
-        db.refresh(activity)
+        await db.commit()
+        await db.refresh(activity)
         return activity
 
     @staticmethod
-    def deactivate_user_immediately(
-        db: Session,
+    async def deactivate_user_immediately(
+        db: AsyncSession,
         user_id: int,
         performed_by_id: Optional[int] = None,
         reason: Optional[str] = None
     ) -> UserActivityHistory:
         """Deactivate user immediately"""
-        user = db.query(User).filter(User.id == user_id).first()
+        stmt = select(User).where(User.id == user_id)
+        result = await db.execute(stmt)
+        user = result.scalar_one_or_none()
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
 
@@ -63,10 +68,12 @@ class UserStatusService:
             raise HTTPException(status_code=400, detail="User is already inactive")
 
         # Cancel any pending scheduled actions
-        pending_actions = db.query(ScheduledUserAction).filter(
+        stmt = select(ScheduledUserAction).where(
             ScheduledUserAction.user_id == user_id,
             ScheduledUserAction.status == ScheduledActionStatus.PENDING
-        ).all()
+        )
+        result = await db.execute(stmt)
+        pending_actions = result.scalars().all()
         for action in pending_actions:
             action.status = ScheduledActionStatus.CANCELLED
 
@@ -79,10 +86,12 @@ class UserStatusService:
         user.scheduled_deactivation_by_id = None
 
         # Update current activity period
-        current_period = db.query(UserActivityHistory).filter(
+        stmt = select(UserActivityHistory).where(
             UserActivityHistory.user_id == user_id,
             UserActivityHistory.left_at.is_(None)
-        ).first()
+        )
+        result = await db.execute(stmt)
+        current_period = result.scalar_one_or_none()
 
         if current_period:
             current_period.left_at = now
@@ -99,20 +108,22 @@ class UserStatusService:
             reason=reason
         )
         db.add(activity)
-        db.commit()
-        db.refresh(activity)
+        await db.commit()
+        await db.refresh(activity)
         return activity
 
     @staticmethod
-    def schedule_user_deactivation(
-        db: Session,
+    async def schedule_user_deactivation(
+        db: AsyncSession,
         user_id: int,
         scheduled_for: datetime,
         performed_by_id: Optional[int] = None,
         reason: Optional[str] = None
     ) -> ScheduledUserAction:
         """Schedule a future deactivation"""
-        user = db.query(User).filter(User.id == user_id).first()
+        stmt = select(User).where(User.id == user_id)
+        result = await db.execute(stmt)
+        user = result.scalar_one_or_none()
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
 
@@ -123,11 +134,13 @@ class UserStatusService:
             raise HTTPException(status_code=400, detail="Scheduled time must be in the future")
 
         # Cancel any existing scheduled deactivations
-        existing_schedules = db.query(ScheduledUserAction).filter(
+        stmt = select(ScheduledUserAction).where(
             ScheduledUserAction.user_id == user_id,
             ScheduledUserAction.status == ScheduledActionStatus.PENDING,
             ScheduledUserAction.action_type == 'deactivate'
-        ).all()
+        )
+        result = await db.execute(stmt)
+        existing_schedules = result.scalars().all()
         for schedule in existing_schedules:
             schedule.status = ScheduledActionStatus.CANCELLED
 
@@ -159,19 +172,21 @@ class UserStatusService:
         )
         db.add(activity)
 
-        db.commit()
-        db.refresh(scheduled_action)
+        await db.commit()
+        await db.refresh(scheduled_action)
         return scheduled_action
 
     @staticmethod
-    def cancel_scheduled_deactivation(
-        db: Session,
+    async def cancel_scheduled_deactivation(
+        db: AsyncSession,
         user_id: int,
         performed_by_id: Optional[int] = None,
         reason: Optional[str] = None
     ) -> UserActivityHistory:
         """Cancel a scheduled deactivation"""
-        user = db.query(User).filter(User.id == user_id).first()
+        stmt = select(User).where(User.id == user_id)
+        result = await db.execute(stmt)
+        user = result.scalar_one_or_none()
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
 
@@ -179,11 +194,14 @@ class UserStatusService:
             raise HTTPException(status_code=400, detail="User does not have a scheduled deactivation")
 
         # Cancel pending scheduled actions
-        pending_actions = db.query(ScheduledUserAction).filter(
+        stmt = select(ScheduledUserAction).where(
             ScheduledUserAction.user_id == user_id,
             ScheduledUserAction.status == ScheduledActionStatus.PENDING,
             ScheduledUserAction.action_type == 'deactivate'
-        ).all()
+        )
+        result = await db.execute(stmt)
+        pending_actions = result.scalars().all()
+        
         for action in pending_actions:
             action.status = ScheduledActionStatus.CANCELLED
 
@@ -202,19 +220,21 @@ class UserStatusService:
             reason=reason
         )
         db.add(activity)
-        db.commit()
-        db.refresh(activity)
+        await db.commit()
+        await db.refresh(activity)
         return activity
 
     @staticmethod
-    def reactivate_user(
-        db: Session,
+    async def reactivate_user(
+        db: AsyncSession,
         user_id: int,
         performed_by_id: Optional[int] = None,
         reason: Optional[str] = None
     ) -> UserActivityHistory:
         """Reactivate an inactive user"""
-        user = db.query(User).filter(User.id == user_id).first()
+        stmt = select(User).where(User.id == user_id)
+        result = await db.execute(stmt)
+        user = result.scalar_one_or_none()
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
 
@@ -236,20 +256,22 @@ class UserStatusService:
             reason=reason
         )
         db.add(activity)
-        db.commit()
-        db.refresh(activity)
+        await db.commit()
+        await db.refresh(activity)
         return activity
 
     @staticmethod
-    def execute_scheduled_deactivation(
-        db: Session,
+    async def execute_scheduled_deactivation(
+        db: AsyncSession,
         scheduled_action_id: int
     ) -> bool:
         """Execute a scheduled deactivation (called by scheduler)"""
         try:
-            scheduled_action = db.query(ScheduledUserAction).filter(
+            stmt = select(ScheduledUserAction).where(
                 ScheduledUserAction.id == scheduled_action_id
-            ).first()
+            )
+            result = await db.execute(stmt)
+            scheduled_action = result.scalar_one_or_none()
 
             if not scheduled_action:
                 return False
@@ -257,11 +279,15 @@ class UserStatusService:
             if scheduled_action.status != ScheduledActionStatus.PENDING:
                 return False
 
-            user = db.query(User).filter(User.id == scheduled_action.user_id).first()
+            stmt = select(User).where(User.id == scheduled_action.user_id)
+
+            result = await db.execute(stmt)
+
+            user = result.scalar_one_or_none()
             if not user:
                 scheduled_action.status = ScheduledActionStatus.FAILED
                 scheduled_action.error_message = "User not found"
-                db.commit()
+                await db.commit()
                 return False
 
             # Perform deactivation
@@ -273,10 +299,12 @@ class UserStatusService:
             user.scheduled_deactivation_by_id = None
 
             # Update current activity period
-            current_period = db.query(UserActivityHistory).filter(
+            stmt = select(UserActivityHistory).where(
                 UserActivityHistory.user_id == user.id,
                 UserActivityHistory.left_at.is_(None)
-            ).first()
+            )
+            result = await db.execute(stmt)
+            current_period = result.scalar_one_or_none()
 
             if current_period:
                 current_period.left_at = now
@@ -299,21 +327,23 @@ class UserStatusService:
             scheduled_action.status = ScheduledActionStatus.EXECUTED
             scheduled_action.executed_at = now
 
-            db.commit()
+            await db.commit()
             return True
 
         except Exception as e:
-            db.rollback()
+            await db.rollback()
             if scheduled_action:
                 scheduled_action.status = ScheduledActionStatus.FAILED
                 scheduled_action.error_message = str(e)
-                db.commit()
+                await db.commit()
             return False
 
     @staticmethod
-    def get_user_status_info(db: Session, user_id: int) -> UserStatusInfo:
+    async def get_user_status_info(db: AsyncSession, user_id: int) -> UserStatusInfo:
         """Get comprehensive status information for a user"""
-        user = db.query(User).filter(User.id == user_id).first()
+        stmt = select(User).where(User.id == user_id)
+        result = await db.execute(stmt)
+        user = result.scalar_one_or_none()
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
 
@@ -332,56 +362,81 @@ class UserStatusService:
         )
 
     @staticmethod
-    def get_user_activity_history(
-        db: Session,
+    async def get_user_activity_history(
+        db: AsyncSession,
         user_id: int,
         limit: Optional[int] = None
     ) -> List[UserActivityHistory]:
         """Get activity history for a user"""
-        query = db.query(UserActivityHistory).filter(
+        from sqlalchemy import select
+        
+        stmt = select(UserActivityHistory).where(
             UserActivityHistory.user_id == user_id
         ).order_by(UserActivityHistory.joined_at.desc())
 
         if limit:
-            query = query.limit(limit)
+            stmt = stmt.limit(limit)
 
-        return query.all()
+        result = await db.execute(stmt)
+        return list(result.scalars().all())
 
     @staticmethod
-    def get_pending_deactivations(db: Session) -> List[ScheduledUserAction]:
+    async def get_pending_deactivations(db: AsyncSession) -> List[ScheduledUserAction]:
         """Get all pending scheduled deactivations"""
-        return db.query(ScheduledUserAction).filter(
+        stmt = select(ScheduledUserAction).where(
             ScheduledUserAction.status == ScheduledActionStatus.PENDING,
             ScheduledUserAction.action_type == 'deactivate'
-        ).order_by(ScheduledUserAction.scheduled_for).all()
+        ).order_by(ScheduledUserAction.scheduled_for)
+        result = await db.execute(stmt)
+        return result.scalars().all()
 
     @staticmethod
-    def get_overdue_actions(db: Session) -> List[ScheduledUserAction]:
+    async def get_overdue_actions(db: AsyncSession) -> List[ScheduledUserAction]:
         """Get overdue scheduled actions"""
         now = datetime.now(timezone.utc)
-        return db.query(ScheduledUserAction).filter(
+        stmt = select(ScheduledUserAction).where(
             ScheduledUserAction.status == ScheduledActionStatus.PENDING,
             ScheduledUserAction.scheduled_for <= now
-        ).all()
+        )
+        result = await db.execute(stmt)
+        return result.scalars().all()
 
     @staticmethod
-    def get_system_activity_stats(db: Session) -> SystemActivityStats:
+    async def get_system_activity_stats(db: AsyncSession) -> SystemActivityStats:
         """Get system-wide activity statistics"""
-        total_users = db.query(User).count()
-        active_users = db.query(User).filter(User.status == UserStatus.ACTIVE).count()
-        inactive_users = db.query(User).filter(User.status == UserStatus.INACTIVE).count()
-        scheduled_deactivations = db.query(User).filter(
+        from sqlalchemy import func
+        stmt = select(func.count()).select_from(User)
+        result = await db.execute(stmt)
+        total_users = result.scalar()
+        from sqlalchemy import func
+        stmt = select(func.count()).select_from(User).where(User.status == UserStatus.ACTIVE)
+        result = await db.execute(stmt)
+        active_users = result.scalar()
+        from sqlalchemy import func
+        stmt = select(func.count()).select_from(User).where(User.status == UserStatus.INACTIVE)
+        result = await db.execute(stmt)
+        inactive_users = result.scalar()
+        from sqlalchemy import func
+        stmt = select(func.count()).select_from(User).where(
             User.status == UserStatus.SCHEDULED_DEACTIVATION
-        ).count()
-        pending_scheduled_actions = db.query(ScheduledUserAction).filter(
+        )
+        result = await db.execute(stmt)
+        scheduled_deactivations = result.scalar()
+        from sqlalchemy import func
+        stmt = select(func.count()).select_from(ScheduledUserAction).where(
             ScheduledUserAction.status == ScheduledActionStatus.PENDING
-        ).count()
+        )
+        result = await db.execute(stmt)
+        pending_scheduled_actions = result.scalar()
 
         now = datetime.now(timezone.utc)
-        overdue_actions = db.query(ScheduledUserAction).filter(
+        from sqlalchemy import func
+        stmt = select(func.count()).select_from(ScheduledUserAction).where(
             ScheduledUserAction.status == ScheduledActionStatus.PENDING,
             ScheduledUserAction.scheduled_for <= now
-        ).count()
+        )
+        result = await db.execute(stmt)
+        overdue_actions = result.scalar()
 
         return SystemActivityStats(
             total_users=total_users,

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
 from datetime import datetime
 
@@ -28,7 +29,7 @@ router = APIRouter(prefix="/users", tags=["user-status"])
 async def deactivate_user(
     user_id: int,
     request: DeactivateUserRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """
@@ -40,7 +41,7 @@ async def deactivate_user(
     """
     try:
         if request.deactivation_type == "immediate":
-            activity = UserStatusService.deactivate_user_immediately(
+            activity = await UserStatusService.deactivate_user_immediately(
                 db=db,
                 user_id=user_id,
                 performed_by_id=current_user.id,
@@ -60,7 +61,7 @@ async def deactivate_user(
                     detail="scheduled_date is required for scheduled deactivation"
                 )
             
-            scheduled_action = UserStatusService.schedule_user_deactivation(
+            scheduled_action = await UserStatusService.schedule_user_deactivation(
                 db=db,
                 user_id=user_id,
                 scheduled_for=request.scheduled_date,
@@ -89,14 +90,14 @@ async def deactivate_user(
 async def cancel_scheduled_deactivation(
     user_id: int,
     request: CancelScheduleRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """
     Cancel a scheduled deactivation and return user to active status
     """
     try:
-        activity = UserStatusService.cancel_scheduled_deactivation(
+        activity = await UserStatusService.cancel_scheduled_deactivation(
             db=db,
             user_id=user_id,
             performed_by_id=current_user.id,
@@ -118,14 +119,14 @@ async def cancel_scheduled_deactivation(
 async def reactivate_user(
     user_id: int,
     request: ReactivateUserRequest,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """
     Reactivate an inactive user
     """
     try:
-        activity = UserStatusService.reactivate_user(
+        activity = await UserStatusService.reactivate_user(
             db=db,
             user_id=user_id,
             performed_by_id=current_user.id,
@@ -146,14 +147,14 @@ async def reactivate_user(
 @router.get("/{user_id}/status", response_model=UserStatusInfo)
 async def get_user_status(
     user_id: int,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """
     Get comprehensive status information for a user
     """
     try:
-        return UserStatusService.get_user_status_info(db, user_id)
+        return await UserStatusService.get_user_status_info(db, user_id)
     except HTTPException:
         raise
     except Exception as e:
@@ -164,20 +165,23 @@ async def get_user_status(
 async def get_user_activity_history(
     user_id: int,
     limit: Optional[int] = None,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """
     Get activity history for a user
     """
     try:
-        activities = UserStatusService.get_user_activity_history(db, user_id, limit)
+        activities = await UserStatusService.get_user_activity_history(db, user_id, limit)
         
         result = []
         for activity in activities:
             performed_by_username = None
             if activity.performed_by_id:
-                performer = db.query(User).filter(User.id == activity.performed_by_id).first()
+                from sqlalchemy import select
+                stmt = select(User).where(User.id == activity.performed_by_id)
+                result_performer = await db.execute(stmt)
+                performer = result_performer.scalar_one_or_none()
                 if performer:
                     performed_by_username = performer.username
             
@@ -205,7 +209,7 @@ async def get_user_activity_history(
 @router.get("/{user_id}/scheduled-actions", response_model=List[ScheduledUserActionResponse])
 async def get_user_scheduled_actions(
     user_id: int,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """
@@ -240,7 +244,7 @@ async def get_user_scheduled_actions(
 
 @router.get("/stats/activity", response_model=SystemActivityStats)
 async def get_system_activity_stats(
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """
@@ -254,14 +258,14 @@ async def get_system_activity_stats(
         )
     
     try:
-        return UserStatusService.get_system_activity_stats(db)
+        return await UserStatusService.get_system_activity_stats(db)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/pending-deactivations", response_model=List[ScheduledUserActionResponse])
 async def get_pending_deactivations(
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     """
@@ -275,7 +279,7 @@ async def get_pending_deactivations(
         )
     
     try:
-        actions = UserStatusService.get_pending_deactivations(db)
+        actions = await UserStatusService.get_pending_deactivations(db)
         
         result = []
         for action in actions:

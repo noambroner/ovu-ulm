@@ -1,9 +1,10 @@
 import logging
-from apscheduler.schedulers.background import BackgroundScheduler
+import asyncio
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 from datetime import datetime, timezone
-from sqlalchemy.orm import Session
-from app.core.database import SessionLocal
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.core.database import AsyncSessionLocal
 from app.services.user_status_service import UserStatusService
 
 # Configure logging
@@ -14,51 +15,48 @@ logger = logging.getLogger(__name__)
 scheduler = None
 
 
-def check_and_execute_scheduled_deactivations():
+async def check_and_execute_scheduled_deactivations():
     """
     Check for overdue scheduled deactivations and execute them
     This function runs periodically (every minute)
     """
-    db: Session = SessionLocal()
-    try:
-        logger.info("Checking for scheduled deactivations...")
-        
-        # Get all overdue actions
-        overdue_actions = UserStatusService.get_overdue_actions(db)
-        
-        if not overdue_actions:
-            logger.info("No overdue deactivations found")
-            return
-        
-        logger.info(f"Found {len(overdue_actions)} overdue deactivations")
-        
-        # Execute each overdue action
-        for action in overdue_actions:
-            try:
-                logger.info(f"Executing scheduled deactivation for user_id={action.user_id}, action_id={action.id}")
-                success = UserStatusService.execute_scheduled_deactivation(db, action.id)
-                
-                if success:
-                    logger.info(f"✅ Successfully executed deactivation for user_id={action.user_id}")
-                else:
-                    logger.error(f"❌ Failed to execute deactivation for user_id={action.user_id}")
+    async with AsyncSessionLocal() as db:
+        try:
+            logger.info("Checking for scheduled deactivations...")
             
-            except Exception as e:
-                logger.error(f"❌ Error executing deactivation for user_id={action.user_id}: {str(e)}")
-                continue
+            # Get all overdue actions
+            overdue_actions = await UserStatusService.get_overdue_actions(db)
+            
+            if not overdue_actions:
+                logger.info("No overdue deactivations found")
+                return
+            
+            logger.info(f"Found {len(overdue_actions)} overdue deactivations")
+            
+            # Execute each overdue action
+            for action in overdue_actions:
+                try:
+                    logger.info(f"Executing scheduled deactivation for user_id={action.user_id}, action_id={action.id}")
+                    success = await UserStatusService.execute_scheduled_deactivation(db, action.id)
+                    
+                    if success:
+                        logger.info(f"✅ Successfully executed deactivation for user_id={action.user_id}")
+                    else:
+                        logger.error(f"❌ Failed to execute deactivation for user_id={action.user_id}")
+                
+                except Exception as e:
+                    logger.error(f"❌ Error executing deactivation for user_id={action.user_id}: {str(e)}")
+                    continue
+            
+            logger.info("Completed scheduled deactivations check")
         
-        logger.info("Completed scheduled deactivations check")
-    
-    except Exception as e:
-        logger.error(f"❌ Error in check_and_execute_scheduled_deactivations: {str(e)}")
-    
-    finally:
-        db.close()
+        except Exception as e:
+            logger.error(f"❌ Error in check_and_execute_scheduled_deactivations: {str(e)}")
 
 
 def start_scheduler():
     """
-    Start the background scheduler for scheduled tasks
+    Start the async scheduler for scheduled tasks
     """
     global scheduler
     
@@ -68,7 +66,7 @@ def start_scheduler():
     
     logger.info("🚀 Starting user status scheduler...")
     
-    scheduler = BackgroundScheduler(
+    scheduler = AsyncIOScheduler(
         timezone="UTC",
         job_defaults={
             'coalesce': True,  # Combine multiple pending executions into one
@@ -153,4 +151,3 @@ __all__ = [
     'get_scheduler_status',
     'check_and_execute_scheduled_deactivations'
 ]
-

@@ -5,6 +5,8 @@ import { Sidebar } from './components/Sidebar/Sidebar';
 import { Dashboard } from './components/Dashboard/Dashboard';
 import { UsersTable } from './components/UsersTable/UsersTable';
 import { ManagePage } from './components/ManagePage/ManagePage';
+import { APIUIEndpoints } from './components/APIUIEndpoints/APIUIEndpoints';
+import { APIFunctions } from './components/APIFunctions/APIFunctions';
 import './App.css';
 import './components/Layout/Layout.css';
 
@@ -40,6 +42,9 @@ const translations = {
     profile: 'פרופיל',
     settings: 'הגדרות',
     manage: 'ניהול',
+    api: 'API',
+    apiUIEndpoints: 'UI Endpoints',
+    apiFunctions: 'פונקציות',
     // Quick Actions
     addNewUser: 'הוסף משתמש',
     viewReports: 'צפה בדוחות',
@@ -74,6 +79,9 @@ const translations = {
     profile: 'Profile',
     settings: 'Settings',
     manage: 'Manage',
+    api: 'API',
+    apiUIEndpoints: 'UI Endpoints',
+    apiFunctions: 'Functions',
     // Quick Actions
     addNewUser: 'Add User',
     viewReports: 'View Reports',
@@ -211,7 +219,32 @@ function AppContent() {
       label: t.manage,
       labelEn: t.manage,
       icon: '🛠️',
-      path: '/manage'
+      path: '/manage',
+      subItems: [
+        {
+          id: 'api',
+          label: t.api,
+          labelEn: t.api,
+          icon: '📡',
+          path: '/api',
+          subItems: [
+            {
+              id: 'api-ui',
+              label: t.apiUIEndpoints,
+              labelEn: t.apiUIEndpoints,
+              icon: '🌐',
+              path: '/api/ui'
+            },
+            {
+              id: 'api-functions',
+              label: t.apiFunctions,
+              labelEn: t.apiFunctions,
+              icon: '⚡',
+              path: '/api/functions'
+            }
+          ]
+        }
+      ]
     }
   ];
 
@@ -403,6 +436,8 @@ function AppContent() {
             <Route path="/users/add" element={<div className="page-placeholder">➕ {t.addUser}</div>} />
             <Route path="/profile" element={<div className="page-placeholder">👤 {t.profile}</div>} />
             <Route path="/manage" element={<ManagePage language={language} theme={theme} />} />
+            <Route path="/api/ui" element={<APIUIEndpoints language={language} theme={theme} appType="ulm" />} />
+            <Route path="/api/functions" element={<APIFunctions language={language} theme={theme} appType="ulm" />} />
             <Route path="*" element={<Dashboard language={language} theme={theme} stats={stats} activities={activities} quickActions={quickActions} />} />
           </Routes>
         </main>

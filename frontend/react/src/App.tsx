@@ -4,6 +4,7 @@ import axios from 'axios';
 import { Sidebar } from './components/Sidebar/Sidebar';
 import { Dashboard } from './components/Dashboard/Dashboard';
 import { UsersTable } from './components/UsersTable/UsersTable';
+import { ManagePage } from './components/ManagePage/ManagePage';
 import './App.css';
 import './components/Layout/Layout.css';
 
@@ -38,6 +39,7 @@ const translations = {
     addUser: 'הוספת משתמש',
     profile: 'פרופיל',
     settings: 'הגדרות',
+    manage: 'ניהול',
     // Quick Actions
     addNewUser: 'הוסף משתמש',
     viewReports: 'צפה בדוחות',
@@ -71,6 +73,7 @@ const translations = {
     addUser: 'Add User',
     profile: 'Profile',
     settings: 'Settings',
+    manage: 'Manage',
     // Quick Actions
     addNewUser: 'Add User',
     viewReports: 'View Reports',
@@ -209,6 +212,13 @@ function AppContent() {
       labelEn: t.settings,
       icon: '⚙️',
       path: '/settings'
+    },
+    {
+      id: 'manage',
+      label: t.manage,
+      labelEn: t.manage,
+      icon: '🛠️',
+      path: '/manage'
     }
   ];
 
@@ -400,6 +410,7 @@ function AppContent() {
             <Route path="/users/add" element={<div className="page-placeholder">➕ {t.addUser}</div>} />
             <Route path="/profile" element={<div className="page-placeholder">👤 {t.profile}</div>} />
             <Route path="/settings" element={<div className="page-placeholder">⚙️ {t.settings}</div>} />
+            <Route path="/manage" element={<ManagePage language={language} theme={theme} />} />
             <Route path="*" element={<Dashboard language={language} theme={theme} stats={stats} activities={activities} quickActions={quickActions} />} />
           </Routes>
         </main>

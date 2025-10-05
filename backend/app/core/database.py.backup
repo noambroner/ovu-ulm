@@ -3,8 +3,8 @@ Database configuration and session management
 """
 from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
-from sqlalchemy.orm import declarative_base, sessionmaker
-from sqlalchemy import MetaData, create_engine
+from sqlalchemy.orm import declarative_base
+from sqlalchemy import MetaData
 from app.core.config import settings
 
 # Database naming convention
@@ -26,18 +26,6 @@ engine = create_async_engine(
     max_overflow=settings.DATABASE_MAX_OVERFLOW,
     pool_timeout=settings.DATABASE_POOL_TIMEOUT,
     pool_pre_ping=True,  # Verify connections before using
-    connect_args={"ssl": False},
-)
-
-# Create sync engine for scheduler
-sync_engine = create_engine(
-    settings.DATABASE_URL.replace("+asyncpg", "+psycopg2"),
-    echo=settings.DEBUG,
-    pool_size=settings.DATABASE_POOL_SIZE,
-    max_overflow=settings.DATABASE_MAX_OVERFLOW,
-    pool_timeout=settings.DATABASE_POOL_TIMEOUT,
-    pool_pre_ping=True,
-    connect_args={"ssl": False},
 )
 
 # Create async session factory
@@ -47,13 +35,6 @@ AsyncSessionLocal = async_sessionmaker(
     expire_on_commit=False,
     autocommit=False,
     autoflush=False,
-)
-
-# Create sync session factory for scheduler
-SessionLocal = sessionmaker(
-    autocommit=False,
-    autoflush=False,
-    bind=sync_engine
 )
 
 # Base class for models
@@ -81,7 +62,7 @@ async def init_db() -> None:
     """
     async with engine.begin() as conn:
         # Import all models here to ensure they're registered with SQLAlchemy
-        from app.models import user, user_activity  # noqa
+        from app.models import user, role, permission  # noqa
         
         # Create all tables
         await conn.run_sync(Base.metadata.create_all)

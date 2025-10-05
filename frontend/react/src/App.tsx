@@ -207,13 +207,6 @@ function AppContent() {
       path: '/profile'
     },
     {
-      id: 'settings',
-      label: t.settings,
-      labelEn: t.settings,
-      icon: '⚙️',
-      path: '/settings'
-    },
-    {
       id: 'manage',
       label: t.manage,
       labelEn: t.manage,
@@ -409,7 +402,6 @@ function AppContent() {
             <Route path="/users/all" element={<UsersTable language={language} theme={theme} apiEndpoint="" token={localStorage.getItem("ulm_token") || ""} />} />
             <Route path="/users/add" element={<div className="page-placeholder">➕ {t.addUser}</div>} />
             <Route path="/profile" element={<div className="page-placeholder">👤 {t.profile}</div>} />
-            <Route path="/settings" element={<div className="page-placeholder">⚙️ {t.settings}</div>} />
             <Route path="/manage" element={<ManagePage language={language} theme={theme} />} />
             <Route path="*" element={<Dashboard language={language} theme={theme} stats={stats} activities={activities} quickActions={quickActions} />} />
           </Routes>

@@ -144,7 +144,8 @@ export const UsersTable = ({ language, apiEndpoint, token }: UsersTableProps) =>
       }
       
       const data = await response.json();
-      setUsers(data);
+      // API returns {users: [...], total: number} not direct array
+      setUsers(Array.isArray(data) ? data : (data.users || []));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {

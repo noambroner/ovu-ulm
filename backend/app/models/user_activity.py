@@ -104,3 +104,10 @@ class ScheduledUserAction(Base):
         delta = self.scheduled_for - datetime.now(timezone.utc)
         return max(0, delta.total_seconds())
 
+
+
+
+
+
+
+

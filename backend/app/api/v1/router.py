@@ -12,3 +12,10 @@ api_router.include_router(user_status.router, tags=["user-status"])
 # api_router.include_router(auth.router, prefix="/auth", tags=["authentication"])
 # api_router.include_router(users.router, prefix="/users", tags=["users"])
 
+
+
+
+
+
+
+

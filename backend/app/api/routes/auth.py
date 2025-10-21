@@ -58,7 +58,7 @@ async def login(login_data: LoginRequest, request: Request):
         user = await conn.fetchrow(
             """
             SELECT id, username, email, role, first_name, last_name, 
-                   preferred_language, status, password_hash
+                   preferred_language, status, hashed_password
             FROM users 
             WHERE username = $1 AND is_active = true
             """,
@@ -71,7 +71,7 @@ async def login(login_data: LoginRequest, request: Request):
             detail="Incorrect username or password"
         )
     
-    # TODO: Verify password_hash (add password verification library)
+    # TODO: Verify hashed_password (add password verification library)
     # For now, we'll assume password is correct
     
     # Get user-specific token settings

@@ -7,12 +7,16 @@ import logging
 from pydantic import BaseModel
 from datetime import datetime, timedelta
 import secrets
+from passlib.context import CryptContext
 
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
 security = HTTPBearer()
+
+# Password hashing context
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # JWT Configuration
 SECRET_KEY = settings.SECRET_KEY
@@ -57,6 +61,18 @@ async def get_db_pool():
             ssl=False
         )
     return db_pool
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """
+    Verify a plain password against a hashed password
+    """
+    return pwd_context.verify(plain_password, hashed_password)
+
+def get_password_hash(password: str) -> str:
+    """
+    Hash a password for storing
+    """
+    return pwd_context.hash(password)
 
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
     """

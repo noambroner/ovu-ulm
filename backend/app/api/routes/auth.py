@@ -14,6 +14,7 @@ from app.core.security import (
     revoke_refresh_token,
     revoke_all_user_tokens,
     get_current_user,
+    verify_password,
     UserResponse
 )
 
@@ -71,8 +72,12 @@ async def login(login_data: LoginRequest, request: Request):
             detail="Incorrect username or password"
         )
     
-    # TODO: Verify hashed_password (add password verification library)
-    # For now, we'll assume password is correct
+    # Verify password
+    if not verify_password(login_data.password, user['hashed_password']):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password"
+        )
     
     # Get user-specific token settings
     async with pool.acquire() as conn:

@@ -5,7 +5,8 @@ import asyncpg
 from urllib.parse import urlparse, unquote
 import logging
 from pydantic import BaseModel
-from datetime import datetime
+from datetime import datetime, timedelta
+import secrets
 
 from app.core.config import settings
 
@@ -87,3 +88,129 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         return UserResponse(**user)
     except jwt.PyJWTError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid authentication credentials")
+
+
+async def create_access_token(user_id: int, expires_delta: timedelta = None) -> str:
+    """
+    Create JWT access token for a user
+    """
+    if expires_delta is None:
+        expires_delta = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+    
+    expire = datetime.utcnow() + expires_delta
+    payload = {
+        "sub": str(user_id),
+        "exp": expire,
+        "type": "access"
+    }
+    
+    token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+    return token
+
+
+async def create_refresh_token(user_id: int, device_info: str = None, ip_address: str = None) -> dict:
+    """
+    Create and store refresh token in database
+    Returns: dict with token and expires_at
+    """
+    pool = await get_db_pool()
+    
+    # Get user-specific token settings or use defaults
+    async with pool.acquire() as conn:
+        settings_row = await conn.fetchrow(
+            "SELECT refresh_token_expire_days FROM token_settings WHERE user_id = $1",
+            user_id
+        )
+    
+    expire_days = settings_row['refresh_token_expire_days'] if settings_row else settings.REFRESH_TOKEN_EXPIRE_DAYS
+    expires_at = datetime.utcnow() + timedelta(days=expire_days)
+    
+    # Generate secure random token
+    token = secrets.token_urlsafe(64)
+    
+    # Store in database
+    async with pool.acquire() as conn:
+        await conn.execute(
+            """
+            INSERT INTO refresh_tokens (user_id, token, expires_at, device_info, ip_address)
+            VALUES ($1, $2, $3, $4, $5)
+            """,
+            user_id, token, expires_at, device_info, ip_address
+        )
+    
+    return {
+        "token": token,
+        "expires_at": expires_at
+    }
+
+
+async def verify_refresh_token(token: str) -> int:
+    """
+    Verify refresh token and return user_id
+    Raises HTTPException if invalid
+    """
+    pool = await get_db_pool()
+    
+    async with pool.acquire() as conn:
+        token_row = await conn.fetchrow(
+            """
+            SELECT user_id, expires_at, revoked 
+            FROM refresh_tokens 
+            WHERE token = $1
+            """,
+            token
+        )
+    
+    if not token_row:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid refresh token"
+        )
+    
+    if token_row['revoked']:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Refresh token has been revoked"
+        )
+    
+    if token_row['expires_at'] < datetime.utcnow():
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Refresh token has expired"
+        )
+    
+    return token_row['user_id']
+
+
+async def revoke_refresh_token(token: str):
+    """
+    Revoke a refresh token
+    """
+    pool = await get_db_pool()
+    
+    async with pool.acquire() as conn:
+        await conn.execute(
+            """
+            UPDATE refresh_tokens 
+            SET revoked = TRUE, revoked_at = CURRENT_TIMESTAMP
+            WHERE token = $1
+            """,
+            token
+        )
+
+
+async def revoke_all_user_tokens(user_id: int):
+    """
+    Revoke all refresh tokens for a user (e.g., on logout from all devices)
+    """
+    pool = await get_db_pool()
+    
+    async with pool.acquire() as conn:
+        await conn.execute(
+            """
+            UPDATE refresh_tokens 
+            SET revoked = TRUE, revoked_at = CURRENT_TIMESTAMP
+            WHERE user_id = $1 AND revoked = FALSE
+            """,
+            user_id
+        )

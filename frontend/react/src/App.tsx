@@ -5,6 +5,7 @@ import { Sidebar } from './components/Sidebar/Sidebar';
 import { Dashboard } from './components/Dashboard/Dashboard';
 import { UsersTable } from './components/UsersTable/UsersTable';
 import { ManagePage } from './components/ManagePage/ManagePage';
+import { TokenControl } from './components/TokenControl/TokenControl';
 import { APIUIEndpoints } from './components/APIUIEndpoints/APIUIEndpoints';
 import { APIFunctions } from './components/APIFunctions/APIFunctions';
 import './App.css';
@@ -42,6 +43,7 @@ const translations = {
     profile: 'פרופיל',
     settings: 'הגדרות',
     manage: 'ניהול',
+    tokenControl: 'בקרת כניסה',
     api: 'API',
     apiUIEndpoints: 'UI Endpoints',
     apiFunctions: 'פונקציות',
@@ -159,7 +161,9 @@ function AppContent() {
         password: password,
       });
 
+      // Save both tokens
       localStorage.setItem('ulm_token', response.data.access_token);
+      localStorage.setItem('ulm_refresh_token', response.data.refresh_token);
       setUserInfo(response.data.user);
       setIsLoggedIn(true);
       navigate('/dashboard');
@@ -170,11 +174,23 @@ function AppContent() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('ulm_token');
-    setIsLoggedIn(false);
-    setUserInfo(null);
-    navigate('/');
+  const handleLogout = async () => {
+    try {
+      // Optional: call logout endpoint
+      const refreshToken = localStorage.getItem('ulm_refresh_token');
+      if (refreshToken) {
+        await api.post('/api/v1/auth/logout', { refresh_token: refreshToken });
+      }
+    } catch (err) {
+      console.error('Logout error:', err);
+    } finally {
+      // Clear local storage regardless
+      localStorage.removeItem('ulm_token');
+      localStorage.removeItem('ulm_refresh_token');
+      setIsLoggedIn(false);
+      setUserInfo(null);
+      navigate('/');
+    }
   };
 
   const menuItems = [
@@ -222,6 +238,13 @@ function AppContent() {
       icon: '🛠️',
       path: '/manage',
       subItems: [
+        {
+          id: 'token-control',
+          label: t.tokenControl,
+          labelEn: 'Token Control',
+          icon: '🔐',
+          path: '/token-control'
+        },
         {
           id: 'api',
           label: t.api,
@@ -437,6 +460,7 @@ function AppContent() {
             <Route path="/users/add" element={<div className="page-placeholder">➕ {t.addUser}</div>} />
             <Route path="/profile" element={<div className="page-placeholder">👤 {t.profile}</div>} />
             <Route path="/manage" element={<ManagePage language={language} theme={theme} />} />
+            <Route path="/token-control" element={<TokenControl language={language} theme={theme} />} />
             <Route path="/api/ui" element={<APIUIEndpoints language={language} theme={theme} appType="ulm" />} />
             <Route path="/api/functions" element={<APIFunctions language={language} theme={theme} appType="ulm" />} />
             <Route path="*" element={<Dashboard language={language} theme={theme} stats={stats} activities={activities} quickActions={quickActions} />} />

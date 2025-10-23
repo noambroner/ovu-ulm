@@ -92,28 +92,50 @@ export const APIFunctions = ({ language, theme, appType }: APIFunctionsProps) =>
   };
 
   const ulmEndpoints: APIEndpoint[] = [
+    // ===== Authentication Endpoints =====
     {
       id: 'auth-login',
       method: 'POST',
       path: '/api/v1/auth/login',
       title: 'User Login',
-      description: 'Authenticate user and receive access token',
+      description: 'Authenticate user with username and password. Returns JWT access token and refresh token.',
       authentication: false,
       category: 'Authentication',
       parameters: [],
       requestBody: `{
-  "username": "string",
-  "password": "string"
+  "username": "user@example.com",
+  "password": "SecurePassword123!"
 }`,
       responseExample: `{
-  "access_token": "eyJ0eXAiOiJKV1QiLCJhbGc...",
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "refresh_token": "550e8400-e29b-41d4-a716-446655440000",
   "token_type": "bearer",
   "user": {
-    "id": 1,
-    "username": "john_doe",
-    "email": "john@example.com",
-    "role": "user"
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "username": "user@example.com",
+    "email": "user@example.com",
+    "role": "user",
+    "first_name": "John",
+    "last_name": "Doe",
+    "preferred_language": "he",
+    "status": "active"
   }
+}`
+    },
+    {
+      id: 'auth-refresh',
+      method: 'POST',
+      path: '/api/v1/auth/refresh',
+      title: 'Refresh Access Token',
+      description: 'Refresh the access token using a valid refresh token. Use this when access token expires.',
+      authentication: false,
+      category: 'Authentication',
+      requestBody: `{
+  "refresh_token": "550e8400-e29b-41d4-a716-446655440000"
+}`,
+      responseExample: `{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type": "bearer"
 }`
     },
     {
@@ -121,19 +143,257 @@ export const APIFunctions = ({ language, theme, appType }: APIFunctionsProps) =>
       method: 'POST',
       path: '/api/v1/auth/logout',
       title: 'User Logout',
-      description: 'Logout user and invalidate session',
+      description: 'Logout from device(s). Provide refresh_token to logout from specific device, or omit to logout from all devices.',
+      authentication: true,
+      category: 'Authentication',
+      parameters: [
+        { name: 'refresh_token', type: 'string', required: false, description: 'Specific refresh token to revoke' },
+      ],
+      responseExample: `{
+  "message": "Logged out successfully"
+}`
+    },
+    {
+      id: 'auth-me',
+      method: 'GET',
+      path: '/api/v1/auth/me',
+      title: 'Get Current User',
+      description: 'Get current authenticated user information. Requires valid access token in Authorization header.',
       authentication: true,
       category: 'Authentication',
       responseExample: `{
-  "message": "Successfully logged out"
+  "id": "123e4567-e89b-12d3-a456-426614174000",
+  "username": "user@example.com",
+  "email": "user@example.com",
+  "role": "user",
+  "first_name": "John",
+  "last_name": "Doe",
+  "preferred_language": "he",
+  "status": "active"
 }`
     },
+
+    // ===== Token Settings Endpoints =====
+    {
+      id: 'token-settings-get',
+      method: 'GET',
+      path: '/api/v1/token-settings/',
+      title: 'Get Token Settings',
+      description: 'Get current user\'s token expiration settings (default: 15 minutes for access, 7 days for refresh).',
+      authentication: true,
+      category: 'Token Settings',
+      responseExample: `{
+  "access_token_expire_minutes": 15,
+  "refresh_token_expire_days": 7
+}`
+    },
+    {
+      id: 'token-settings-update',
+      method: 'PUT',
+      path: '/api/v1/token-settings/',
+      title: 'Update Token Settings',
+      description: 'Update token expiration settings. Access token: 5-1440 minutes. Refresh token: 1-90 days.',
+      authentication: true,
+      category: 'Token Settings',
+      requestBody: `{
+  "access_token_expire_minutes": 30,
+  "refresh_token_expire_days": 14
+}`,
+      responseExample: `{
+  "access_token_expire_minutes": 30,
+  "refresh_token_expire_days": 14
+}`
+    },
+    {
+      id: 'token-settings-reset',
+      method: 'POST',
+      path: '/api/v1/token-settings/reset',
+      title: 'Reset Token Settings',
+      description: 'Reset token settings to defaults (15 minutes / 7 days).',
+      authentication: true,
+      category: 'Token Settings',
+      responseExample: `{
+  "message": "Token settings reset to defaults"
+}`
+    },
+
+    // ===== User Status Management =====
+    {
+      id: 'user-deactivate',
+      method: 'POST',
+      path: '/api/v1/users/{user_id}/deactivate',
+      title: 'Deactivate User',
+      description: 'Deactivate user immediately or schedule future deactivation. Requires admin role.',
+      authentication: true,
+      category: 'User Status',
+      parameters: [
+        { name: 'user_id', type: 'integer', required: true, description: 'User ID to deactivate' },
+      ],
+      requestBody: `{
+  "deactivation_type": "immediate",
+  "reason": "Contract ended"
+}`,
+      responseExample: `{
+  "success": true,
+  "message": "User deactivated successfully",
+  "user_status": "inactive",
+  "scheduled_for": null
+}`
+    },
+    {
+      id: 'user-cancel-schedule',
+      method: 'POST',
+      path: '/api/v1/users/{user_id}/cancel-schedule',
+      title: 'Cancel Scheduled Deactivation',
+      description: 'Cancel a scheduled deactivation and return user to active status. Requires admin role.',
+      authentication: true,
+      category: 'User Status',
+      parameters: [
+        { name: 'user_id', type: 'integer', required: true, description: 'User ID' },
+      ],
+      requestBody: `{
+  "reason": "Contract extended"
+}`,
+      responseExample: `{
+  "success": true,
+  "message": "Scheduled deactivation cancelled successfully",
+  "user_status": "active",
+  "scheduled_for": null
+}`
+    },
+    {
+      id: 'user-reactivate',
+      method: 'POST',
+      path: '/api/v1/users/{user_id}/reactivate',
+      title: 'Reactivate User',
+      description: 'Reactivate an inactive user to restore access. Requires admin role.',
+      authentication: true,
+      category: 'User Status',
+      parameters: [
+        { name: 'user_id', type: 'integer', required: true, description: 'User ID to reactivate' },
+      ],
+      requestBody: `{
+  "reason": "Contract renewed"
+}`,
+      responseExample: `{
+  "success": true,
+  "message": "User reactivated successfully",
+  "user_status": "active",
+  "scheduled_for": null
+}`
+    },
+    {
+      id: 'user-status',
+      method: 'GET',
+      path: '/api/v1/users/{user_id}/status',
+      title: 'Get User Status',
+      description: 'Get comprehensive status information for a user (active, inactive, scheduled_deactivation).',
+      authentication: true,
+      category: 'User Status',
+      parameters: [
+        { name: 'user_id', type: 'integer', required: true, description: 'User ID' },
+      ],
+      responseExample: `{
+  "user_id": 123,
+  "status": "active",
+  "current_period": {
+    "joined_at": "2025-01-01T00:00:00Z",
+    "duration_days": 295
+  },
+  "next_scheduled_action": null
+}`
+    },
+    {
+      id: 'user-activity-history',
+      method: 'GET',
+      path: '/api/v1/users/{user_id}/activity-history',
+      title: 'Get Activity History',
+      description: 'Get complete activity history for a user (all join/leave events and status changes).',
+      authentication: true,
+      category: 'User Status',
+      parameters: [
+        { name: 'user_id', type: 'integer', required: true, description: 'User ID' },
+        { name: 'limit', type: 'integer', required: false, description: 'Limit number of records' },
+      ],
+      responseExample: `[
+  {
+    "id": 1,
+    "user_id": 123,
+    "joined_at": "2025-01-01T00:00:00Z",
+    "action_type": "join",
+    "performed_by_username": "admin@example.com",
+    "reason": "New user registration",
+    "duration_days": 295,
+    "is_current": true
+  }
+]`
+    },
+    {
+      id: 'user-scheduled-actions',
+      method: 'GET',
+      path: '/api/v1/users/{user_id}/scheduled-actions',
+      title: 'Get Scheduled Actions',
+      description: 'Get all scheduled actions for a user (pending, completed, cancelled, failed).',
+      authentication: true,
+      category: 'User Status',
+      parameters: [
+        { name: 'user_id', type: 'integer', required: true, description: 'User ID' },
+      ],
+      responseExample: `[
+  {
+    "id": 1,
+    "user_id": 123,
+    "action_type": "deactivate",
+    "scheduled_for": "2025-10-30T10:00:00Z",
+    "status": "pending",
+    "is_overdue": false,
+    "time_until_execution": "7 days"
+  }
+]`
+    },
+    {
+      id: 'stats-activity',
+      method: 'GET',
+      path: '/api/v1/stats/activity',
+      title: 'System Activity Statistics',
+      description: 'Get system-wide user activity statistics. Requires admin role.',
+      authentication: true,
+      category: 'User Status',
+      responseExample: `{
+  "total_users": 150,
+  "active_users": 120,
+  "inactive_users": 25,
+  "scheduled_deactivations": 5,
+  "pending_scheduled_actions": 5
+}`
+    },
+    {
+      id: 'pending-deactivations',
+      method: 'GET',
+      path: '/api/v1/users/pending-deactivations',
+      title: 'Get Pending Deactivations',
+      description: 'Get all pending scheduled deactivations across the system. Requires admin role.',
+      authentication: true,
+      category: 'User Status',
+      responseExample: `[
+  {
+    "id": 1,
+    "user_id": 123,
+    "action_type": "deactivate",
+    "scheduled_for": "2025-10-30T10:00:00Z",
+    "status": "pending",
+    "is_overdue": false
+  }
+]`
+    },
+
+    // ===== User Management =====
     {
       id: 'users-list',
       method: 'GET',
       path: '/api/v1/users',
       title: 'Get All Users',
-      description: 'Retrieve a list of all users (Admin only)',
+      description: 'Retrieve a list of all users with pagination and search. Requires admin role.',
       authentication: true,
       category: 'Users',
       parameters: [
@@ -148,6 +408,7 @@ export const APIFunctions = ({ language, theme, appType }: APIFunctionsProps) =>
       "username": "john_doe",
       "email": "john@example.com",
       "role": "user",
+      "status": "active",
       "created_at": "2025-01-01T00:00:00Z"
     }
   ],
@@ -161,7 +422,7 @@ export const APIFunctions = ({ language, theme, appType }: APIFunctionsProps) =>
       method: 'POST',
       path: '/api/v1/users',
       title: 'Create User',
-      description: 'Create a new user (Admin only)',
+      description: 'Create a new user. Requires admin role.',
       authentication: true,
       category: 'Users',
       requestBody: `{
@@ -184,7 +445,7 @@ export const APIFunctions = ({ language, theme, appType }: APIFunctionsProps) =>
       method: 'PUT',
       path: '/api/v1/users/{id}',
       title: 'Update User',
-      description: 'Update user information (Admin only)',
+      description: 'Update user information. Requires admin role.',
       authentication: true,
       category: 'Users',
       parameters: [

@@ -10,6 +10,7 @@ import { APIUIEndpoints } from './components/APIUIEndpoints/APIUIEndpoints';
 import { APIFunctions } from './components/APIFunctions/APIFunctions';
 import { ApplicationMap } from './components/ApplicationMap/ApplicationMap';
 import { DatabaseViewer } from './components/DatabaseViewer/DatabaseViewer';
+import { APILogs } from './components/APILogs/APILogs';
 import './App.css';
 import './components/Layout/Layout.css';
 
@@ -48,6 +49,9 @@ const translations = {
     tokenControl: 'בקרת כניסה',
     applicationMap: 'מפת האפליקציה',
     databaseViewer: 'מציג מסד נתונים',
+    logs: 'לוגים',
+    backendLogs: 'לוג Backend',
+    frontendLogs: 'לוג Frontend',
     api: 'API',
     apiUIEndpoints: 'UI Endpoints',
     apiFunctions: 'פונקציות',
@@ -88,6 +92,9 @@ const translations = {
     tokenControl: 'Token Control',
     applicationMap: 'Application Map',
     databaseViewer: 'Database Viewer',
+    logs: 'Logs',
+    backendLogs: 'Backend Logs',
+    frontendLogs: 'Frontend Logs',
     api: 'API',
     apiUIEndpoints: 'UI Endpoints',
     apiFunctions: 'Functions',
@@ -265,6 +272,29 @@ function AppContent() {
           labelEn: t.databaseViewer,
           icon: '🗄️',
           path: '/database-viewer'
+        },
+        {
+          id: 'logs',
+          label: t.logs,
+          labelEn: t.logs,
+          icon: '📋',
+          path: '/logs',
+          subItems: [
+            {
+              id: 'backend-logs',
+              label: t.backendLogs,
+              labelEn: t.backendLogs,
+              icon: '🖥️',
+              path: '/logs/backend'
+            },
+            {
+              id: 'frontend-logs',
+              label: t.frontendLogs,
+              labelEn: t.frontendLogs,
+              icon: '🌐',
+              path: '/logs/frontend'
+            }
+          ]
         },
         {
           id: 'api',
@@ -484,6 +514,8 @@ function AppContent() {
             <Route path="/token-control" element={<TokenControl language={language} theme={theme} />} />
             <Route path="/application-map" element={<ApplicationMap language={language} theme={theme} />} />
             <Route path="/database-viewer" element={<DatabaseViewer language={language} theme={theme} />} />
+            <Route path="/logs/backend" element={<APILogs language={language} theme={theme} logType="backend" />} />
+            <Route path="/logs/frontend" element={<APILogs language={language} theme={theme} logType="frontend" />} />
             <Route path="/api/ui" element={<APIUIEndpoints language={language} theme={theme} appType="ulm" />} />
             <Route path="/api/functions" element={<APIFunctions language={language} theme={theme} appType="ulm" />} />
             <Route path="*" element={<Dashboard language={language} theme={theme} stats={stats} activities={activities} quickActions={quickActions} />} />

@@ -24,8 +24,10 @@ export const ApplicationMap = ({ language, theme }: ApplicationMapProps) => {
 
   const t = {
     he: {
-      title: 'מפת האפליקציה',
-      subtitle: 'מבנה ויזואלי אינטראקטיבי של מערכת ULM',
+      title: 'מפת האפליקציה - ULM System',
+      subtitle: 'מערכת ניהול משתמשים מתקדמת עם אימות JWT, ניהול טוקנים והשבתות משתמשים מתוזמנות',
+      systemDescription: 'ULM (User Login Manager) היא מערכת ניהול משתמשים מלאה הבנויה על React בצד הלקוח ו-FastAPI בצד השרת. המערכת מספקת אימות מאובטח עם JWT + Refresh Tokens, ניהול הרשאות, השבתות משתמשים מתוזמנות, מעקב היסטוריית פעילות ובקרת זמני תוקף טוקנים ברמת משתמש. כל הנתונים נשמרים ב-PostgreSQL והמערכת תומכת ב-3 שפות (עברית, אנגלית, ערבית) עם RTL מלא.',
+      howSystemWorks: 'איך המערכת עובדת?',
       frontend: 'Frontend',
       backend: 'Backend',
       database: 'מסד נתונים',
@@ -42,8 +44,10 @@ export const ApplicationMap = ({ language, theme }: ApplicationMapProps) => {
       closeDetails: 'סגור',
     },
     en: {
-      title: 'Application Map',
-      subtitle: 'Interactive visual structure of ULM system',
+      title: 'Application Map - ULM System',
+      subtitle: 'Advanced User Management System with JWT authentication, token management and scheduled user deactivations',
+      systemDescription: 'ULM (User Login Manager) is a complete user management system built on React for the client and FastAPI for the server. The system provides secure authentication with JWT + Refresh Tokens, permission management, scheduled user deactivations, activity history tracking, and user-level token expiration control. All data is stored in PostgreSQL and the system supports 3 languages (Hebrew, English, Arabic) with full RTL support.',
+      howSystemWorks: 'How does the system work?',
       frontend: 'Frontend',
       backend: 'Backend',
       database: 'Database',
@@ -60,8 +64,10 @@ export const ApplicationMap = ({ language, theme }: ApplicationMapProps) => {
       closeDetails: 'Close',
     },
     ar: {
-      title: 'خريطة التطبيق',
-      subtitle: 'بنية مرئية تفاعلية لنظام ULM',
+      title: 'خريطة التطبيق - نظام ULM',
+      subtitle: 'نظام إدارة مستخدمين متقدم مع مصادقة JWT وإدارة الرموز وإلغاء تنشيط المستخدمين المجدول',
+      systemDescription: 'ULM (مدير تسجيل دخول المستخدم) هو نظام إدارة مستخدمين كامل مبني على React للعميل و FastAPI للخادم. يوفر النظام مصادقة آمنة مع JWT + Refresh Tokens وإدارة الصلاحيات وإلغاء تنشيط المستخدمين المجدول وتتبع سجل النشاط والتحكم في انتهاء صلاحية الرموز على مستوى المستخدم. يتم تخزين جميع البيانات في PostgreSQL ويدعم النظام 3 لغات (العبرية والإنجليزية والعربية) مع دعم RTL كامل.',
+      howSystemWorks: 'كيف يعمل النظام؟',
       frontend: 'الواجهة الأمامية',
       backend: 'الخلفية',
       database: 'قاعدة البيانات',
@@ -85,7 +91,7 @@ export const ApplicationMap = ({ language, theme }: ApplicationMapProps) => {
       id: 'frontend-react',
       type: 'frontend',
       name: 'React Application',
-      description: 'ממשק משתמש ראשי בנוי על React + TypeScript + Vite',
+      description: 'אפליקציית SPA (Single Page Application) המספקת ממשק משתמש מתקדם עם ניווט client-side, ניהול state גלובלי, ותמיכה מלאה ב-RTL ו-3 שפות. האפליקציה בנויה על React 18 עם TypeScript לבטיחות טיפוסים ו-Vite לבנייה מהירה. כוללת routing עם React Router, ניהול טפסים, modals אינטראקטיביים ותקשורת עם Backend דרך Axios.',
       tech: 'React 18 + TypeScript + Vite',
       files: [
         'src/App.tsx',
@@ -99,7 +105,7 @@ export const ApplicationMap = ({ language, theme }: ApplicationMapProps) => {
       id: 'frontend-components',
       type: 'frontend',
       name: 'UI Components',
-      description: 'קומפוננטות UI: Dashboard, Users, Login, Modals',
+      description: 'אוסף קומפוננטות React מודולריות וניתנות לשימוש חוזר: Dashboard עם סטטיסטיקות, UsersTable עם חיפוש וסינון, LoginPage, Sidebar עם תפריט מתקפל, Modals לעריכה והוספת משתמשים, TokenControl לבקרת טוקנים, ApplicationMap למיפוי המערכת, ועוד. כל קומפוננטה עצמאית עם CSS משלה ותמיכה מלאה בדארק מוד ו-RTL.',
       tech: 'React Components',
       files: [
         'Dashboard.tsx',
@@ -117,7 +123,7 @@ export const ApplicationMap = ({ language, theme }: ApplicationMapProps) => {
       id: 'backend-api',
       type: 'backend',
       name: 'FastAPI Application',
-      description: 'שרת Backend ראשי עם FastAPI',
+      description: 'שרת API מלא מבוסס Python FastAPI + Uvicorn. מספק REST API עם תיעוד אוטומטי (Swagger UI), אימות JWT, ניהול משתמשים, ניהול טוקנים, השבתות מתוזמנות, ועוד. כולל CORS middleware לתקשורת עם Frontend, middleware לניהול טוקנים, health checks (/, /health, /ready), וטיפול מתקדם בשגיאות. כל ה-endpoints מנוהלים דרך APIRouter במבנה modular.',
       tech: 'Python 3.11 + FastAPI + Uvicorn',
       endpoints: [
         'POST /api/v1/auth/login',
@@ -133,7 +139,7 @@ export const ApplicationMap = ({ language, theme }: ApplicationMapProps) => {
       id: 'auth-service',
       type: 'service',
       name: 'Authentication Service',
-      description: 'שירות אימות JWT עם Refresh Tokens',
+      description: 'שירות אימות מאובטח מבוסס JWT + Refresh Token. מטפל בתהליך Login (שליחת username/password), שמירת Access Token ב-memory ו-Refresh Token ב-httpOnly cookie, רענון אוטומטי של טוקנים דרך interceptors, Logout מלא, ואימות משתמש שוטף. משתמש ב-python-jose לקידוד/פענוח JWT ו-passlib (bcrypt) לבדיקת סיסמאות.',
       tech: 'JWT + bcrypt',
       endpoints: [
         'POST /auth/login',
@@ -149,7 +155,7 @@ export const ApplicationMap = ({ language, theme }: ApplicationMapProps) => {
       id: 'token-service',
       type: 'service',
       name: 'Token Settings Service',
-      description: 'ניהול הגדרות טוקנים למשתמש',
+      description: 'שירות לניהול זמני תוקף מותאמים אישית לכל משתמש. מאפשר למשתמש לקבוע כמה זמן Access Token ו-Refresh Token שלו יהיו תקפים (access_token_expire: 5-120 דקות, refresh_token_expire: 1-30 ימים). כולל איפוס להגדרות ברירת מחדל. ההגדרות נשמרות בטבלת user_token_settings ונאכפות בזמן יצירת טוקנים חדשים.',
       tech: 'FastAPI + PostgreSQL',
       endpoints: [
         'GET /token-settings/',
@@ -164,7 +170,7 @@ export const ApplicationMap = ({ language, theme }: ApplicationMapProps) => {
       id: 'user-status-service',
       type: 'service',
       name: 'User Status Management',
-      description: 'ניהול סטטוס משתמשים והשבתות מתוזמנות',
+      description: 'שירות לניהול סטטוס משתמשים (active/inactive) והשבתות מתוזמנות. מאפשר השבתה מיידית או מתוזמנת לעתיד, ביטול תזמון, הפעלה מחדש, וצפייה בהיסטוריית פעילות. משתמש ב-APScheduler לתזמון השבתות אוטומטיות. כל פעולה נשמרת בטבלת user_activity_history עם timestamp, סוג פעולה, ומשתמש מבצע. תומך גם בסטטיסטיקות רוחב-מערכתיות.',
       tech: 'FastAPI + APScheduler',
       endpoints: [
         'POST /users/{id}/deactivate',
@@ -195,7 +201,7 @@ export const ApplicationMap = ({ language, theme }: ApplicationMapProps) => {
       id: 'database-postgres',
       type: 'database',
       name: 'PostgreSQL Database',
-      description: 'מסד נתונים ראשי - ulm_db',
+      description: 'מסד נתונים יחסי מלא (ulm_db) המאחסן את כל נתוני המערכת: טבלת users (משתמשים עם username, password hash, email, role, status), refresh_tokens (מעקב אחרי טוקני רענון פעילים), user_token_settings (הגדרות זמן תוקף אישיות), user_activity_history (היסטוריית פעולות), scheduled_deactivations (השבתות מתוזמנות). תומך בחיבורים מרובים, transactions, indexes מותאמים, ובחיבור מאובטח דרך asyncpg.',
       tech: 'PostgreSQL 17',
       files: [
         'users table',
@@ -268,6 +274,10 @@ export const ApplicationMap = ({ language, theme }: ApplicationMapProps) => {
       <div className="map-header">
         <h1 className="map-title">{t[language].title}</h1>
         <p className="map-subtitle">{t[language].subtitle}</p>
+        <div className="system-description">
+          <h3>{t[language].howSystemWorks}</h3>
+          <p>{t[language].systemDescription}</p>
+        </div>
       </div>
 
       <div className="map-container">
@@ -490,4 +500,5 @@ export const ApplicationMap = ({ language, theme }: ApplicationMapProps) => {
     </div>
   );
 };
+
 

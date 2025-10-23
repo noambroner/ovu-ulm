@@ -40,6 +40,44 @@
 .map-subtitle {
   font-size: 1.1rem;
   color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+}
+
+.system-description {
+  background: var(--card-background);
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 2rem auto 0;
+  max-width: 900px;
+  text-align: right;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.system-description:hover {
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.system-description h3 {
+  font-size: 1.3rem;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  font-weight: 600;
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 0.5rem;
+}
+
+.system-description p {
+  font-size: 1rem;
+  line-height: 1.8;
+  color: var(--text-secondary);
+  text-align: justify;
+}
+
+[dir="ltr"] .system-description {
+  text-align: left;
 }
 
 /* Map Container */
@@ -534,4 +572,5 @@
 .element-details-modal::-webkit-scrollbar-thumb:hover {
   background: #61dafb;
 }
+
 

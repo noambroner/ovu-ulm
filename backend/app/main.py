@@ -83,6 +83,7 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(LocalizationMiddleware)
 
 # Add API Logger Middleware (logs all API requests/responses to database)
+# Uses BackgroundTask to log AFTER response is sent (non-blocking)
 app.add_middleware(APILoggerMiddleware)
 
 # Configure CORS

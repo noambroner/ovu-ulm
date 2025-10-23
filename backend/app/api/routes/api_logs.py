@@ -289,15 +289,14 @@ async def get_frontend_logs(
 )
 async def save_frontend_logs_batch(
     batch: FrontendLogBatch,
-    db: AsyncSession = Depends(get_db),
-    current_user = Depends(get_current_user)
+    db: AsyncSession = Depends(get_db)
 ) -> Dict[str, Any]:
     """
     Save a batch of Frontend API logs.
     
     Accepts multiple log entries and saves them efficiently.
     
-    Requires authentication.
+    Authentication not required (logs may be sent before login).
     """
     try:
         saved_count = 0
@@ -318,8 +317,8 @@ async def save_frontend_logs_batch(
                 endpoint=log_entry.endpoint,
                 request_body=log_entry.request_body,
                 request_headers=log_entry.request_headers,
-                user_id=log_entry.user_id or current_user.get("id"),
-                username=log_entry.username or current_user.get("username"),
+                user_id=log_entry.user_id,
+                username=log_entry.username,
                 session_id=log_entry.session_id,
                 status_code=log_entry.status_code,
                 response_body=log_entry.response_body,

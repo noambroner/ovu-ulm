@@ -8,7 +8,7 @@ from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response, StreamingResponse
 from datetime import datetime, timezone
-from app.core.database import async_session
+from app.core.database import AsyncSessionLocal
 from app.models.api_logs import APILogBackend
 import asyncio
 
@@ -107,7 +107,7 @@ class APILoggerMiddleware(BaseHTTPMiddleware):
     async def _save_log(self, **kwargs):
         """Save log entry to database"""
         try:
-            async with async_session() as session:
+            async with AsyncSessionLocal() as session:
                 log_entry = APILogBackend(**kwargs)
                 session.add(log_entry)
                 await session.commit()

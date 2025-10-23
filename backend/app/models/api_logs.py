@@ -22,7 +22,7 @@ class APILogBackend(Base):
     request_headers = Column(Text)
     
     # User Information
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+    user_id = Column(Integer, nullable=True, index=True)
     username = Column(String(100))
     user_ip = Column(String(50))
     user_agent = Column(Text)
@@ -61,7 +61,7 @@ class APILogFrontend(Base):
     request_headers = Column(Text)
     
     # User Information
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+    user_id = Column(Integer, nullable=True, index=True)
     username = Column(String(100))
     session_id = Column(String(100))
     

@@ -521,6 +521,76 @@ Set language preference in user profile via `preferred_language` field.
 
 ---
 
+## Health & System Endpoints
+
+### ❤️ GET /health
+**Basic health check**
+
+**Response (200):**
+```json
+{
+  "status": "healthy",
+  "service": "ULM - User Login Manager",
+  "version": "1.0.0"
+}
+```
+
+**Use Cases:**
+- Monitor service availability
+- Load balancer health checks
+- System monitoring tools
+
+---
+
+### 🔍 GET /ready
+**Readiness check for dependencies**
+
+**Response (200):**
+```json
+{
+  "ready": true,
+  "checks": {
+    "database": true,
+    "redis": true,
+    "celery": true
+  }
+}
+```
+
+**Response (503 - Not Ready):**
+```json
+{
+  "ready": false,
+  "checks": {
+    "database": true,
+    "redis": false,
+    "celery": false
+  }
+}
+```
+
+**Use Cases:**
+- Kubernetes readiness probes
+- Verify all dependencies before accepting traffic
+- Deployment validation
+
+---
+
+### 🏠 GET /
+**Root endpoint with service info**
+
+**Response (200):**
+```json
+{
+  "service": "ULM - User Login Manager",
+  "version": "1.0.0",
+  "status": "operational",
+  "api_docs": "/api/v1/docs"
+}
+```
+
+---
+
 ## Contact & Support
 
 - **GitHub:** https://github.com/noambroner/ovu-ulm

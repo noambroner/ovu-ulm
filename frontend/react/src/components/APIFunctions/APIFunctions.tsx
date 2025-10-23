@@ -387,82 +387,51 @@ export const APIFunctions = ({ language, theme, appType }: APIFunctionsProps) =>
 ]`
     },
 
-    // ===== User Management =====
+    // ===== System Health =====
     {
-      id: 'users-list',
+      id: 'health-check',
       method: 'GET',
-      path: '/api/v1/users',
-      title: 'Get All Users',
-      description: 'Retrieve a list of all users with pagination and search. Requires admin role.',
-      authentication: true,
-      category: 'Users',
-      parameters: [
-        { name: 'skip', type: 'integer', required: false, description: 'Number of records to skip' },
-        { name: 'limit', type: 'integer', required: false, description: 'Maximum records to return' },
-        { name: 'search', type: 'string', required: false, description: 'Search query' },
-      ],
+      path: '/health',
+      title: 'Health Check',
+      description: 'Basic health check endpoint to verify service is running.',
+      authentication: false,
+      category: 'Health',
       responseExample: `{
-  "users": [
-    {
-      "id": 1,
-      "username": "john_doe",
-      "email": "john@example.com",
-      "role": "user",
-      "status": "active",
-      "created_at": "2025-01-01T00:00:00Z"
-    }
-  ],
-  "total": 150,
-  "skip": 0,
-  "limit": 100
+  "status": "healthy",
+  "service": "ULM - User Login Manager",
+  "version": "1.0.0"
 }`
     },
     {
-      id: 'users-create',
-      method: 'POST',
-      path: '/api/v1/users',
-      title: 'Create User',
-      description: 'Create a new user. Requires admin role.',
-      authentication: true,
-      category: 'Users',
-      requestBody: `{
-  "username": "string",
-  "email": "user@example.com",
-  "password": "string",
-  "phone": "string",
-  "role": "user"
-}`,
+      id: 'readiness-check',
+      method: 'GET',
+      path: '/ready',
+      title: 'Readiness Check',
+      description: 'Readiness check to verify all dependencies (database, redis, celery) are ready.',
+      authentication: false,
+      category: 'Health',
       responseExample: `{
-  "id": 2,
-  "username": "new_user",
-  "email": "new@example.com",
-  "role": "user",
-  "created_at": "2025-01-15T10:30:00Z"
+  "ready": true,
+  "checks": {
+    "database": true,
+    "redis": true,
+    "celery": true
+  }
 }`
     },
     {
-      id: 'users-update',
-      method: 'PUT',
-      path: '/api/v1/users/{id}',
-      title: 'Update User',
-      description: 'Update user information. Requires admin role.',
-      authentication: true,
-      category: 'Users',
-      parameters: [
-        { name: 'id', type: 'integer', required: true, description: 'User ID' },
-      ],
-      requestBody: `{
-  "username": "string",
-  "email": "user@example.com",
-  "phone": "string",
-  "role": "user"
-}`,
+      id: 'root',
+      method: 'GET',
+      path: '/',
+      title: 'Root Endpoint',
+      description: 'Root endpoint providing service information and API documentation links.',
+      authentication: false,
+      category: 'Health',
       responseExample: `{
-  "id": 2,
-  "username": "updated_user",
-  "email": "updated@example.com",
-  "role": "admin",
-  "updated_at": "2025-01-15T11:00:00Z"
+  "service": "ULM - User Login Manager",
+  "version": "1.0.0",
+  "status": "operational",
+  "api_docs": "/api/v1/docs"
 }`
     }
   ];

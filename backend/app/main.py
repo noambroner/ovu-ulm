@@ -132,7 +132,39 @@ async def add_security_headers(request: Request, call_next):
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
 # Root endpoint
-@app.get("/", tags=["Root"])
+@app.get(
+    "/",
+    tags=["Root"],
+    summary="Root Endpoint",
+    description="""
+    Root endpoint providing service information and API documentation links.
+    
+    **Returns:**
+    - Service name and version
+    - Operational status
+    - Link to API documentation
+    
+    **Use Cases:**
+    - Verify service is accessible
+    - Get API documentation URL
+    - Check service version
+    """,
+    responses={
+        200: {
+            "description": "Service information",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "service": "ULM - User Login Manager",
+                        "version": "1.0.0",
+                        "status": "operational",
+                        "api_docs": "/api/v1/docs"
+                    }
+                }
+            }
+        }
+    }
+)
 async def root():
     """Root endpoint"""
     return {
@@ -143,7 +175,41 @@ async def root():
     }
 
 # Health check endpoint
-@app.get(settings.HEALTH_CHECK_PATH, tags=["Health"])
+@app.get(
+    settings.HEALTH_CHECK_PATH,
+    tags=["Health"],
+    summary="Health Check",
+    description="""
+    Basic health check endpoint to verify service is running.
+    
+    **Returns:**
+    - Service health status
+    - Service name and version
+    
+    **Use Cases:**
+    - Load balancer health checks
+    - Monitoring system health probes
+    - Uptime monitoring
+    - CI/CD deployment validation
+    
+    **Note:** This is a lightweight check that only verifies the service is responsive.
+    For dependency checks, use `/ready` endpoint.
+    """,
+    responses={
+        200: {
+            "description": "Service is healthy",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "status": "healthy",
+                        "service": "ULM - User Login Manager",
+                        "version": "1.0.0"
+                    }
+                }
+            }
+        }
+    }
+)
 async def health_check():
     """Basic health check"""
     return {
@@ -153,7 +219,67 @@ async def health_check():
     }
 
 # Readiness check endpoint
-@app.get(settings.READY_CHECK_PATH, tags=["Health"])
+@app.get(
+    settings.READY_CHECK_PATH,
+    tags=["Health"],
+    summary="Readiness Check",
+    description="""
+    Readiness check endpoint to verify all dependencies are operational.
+    
+    **Checks:**
+    - **Database:** PostgreSQL connection and query execution
+    - **Redis:** Connection to Redis cache (placeholder)
+    - **Celery:** Celery worker availability (placeholder)
+    
+    **Returns:**
+    - Overall readiness status
+    - Individual check results
+    
+    **Use Cases:**
+    - Kubernetes readiness probes
+    - Service mesh health checks
+    - Load balancer configuration
+    - Deployment validation before accepting traffic
+    
+    **Response Codes:**
+    - `200 OK` - All dependencies are ready
+    - `503 Service Unavailable` - One or more dependencies are not ready
+    
+    **Note:** Service should not receive traffic until this endpoint returns 200.
+    """,
+    responses={
+        200: {
+            "description": "All dependencies are ready",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "ready": True,
+                        "checks": {
+                            "database": True,
+                            "redis": True,
+                            "celery": True
+                        }
+                    }
+                }
+            }
+        },
+        503: {
+            "description": "Service not ready - dependencies unavailable",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "ready": False,
+                        "checks": {
+                            "database": True,
+                            "redis": False,
+                            "celery": False
+                        }
+                    }
+                }
+            }
+        }
+    }
+)
 async def readiness_check():
     """Readiness check - verify all dependencies"""
     checks = {

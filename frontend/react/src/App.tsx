@@ -8,6 +8,7 @@ import { ManagePage } from './components/ManagePage/ManagePage';
 import { TokenControl } from './components/TokenControl/TokenControl';
 import { APIUIEndpoints } from './components/APIUIEndpoints/APIUIEndpoints';
 import { APIFunctions } from './components/APIFunctions/APIFunctions';
+import { ApplicationMap } from './components/ApplicationMap/ApplicationMap';
 import './App.css';
 import './components/Layout/Layout.css';
 
@@ -44,6 +45,7 @@ const translations = {
     settings: 'הגדרות',
     manage: 'ניהול',
     tokenControl: 'בקרת כניסה',
+    applicationMap: 'מפת האפליקציה',
     api: 'API',
     apiUIEndpoints: 'UI Endpoints',
     apiFunctions: 'פונקציות',
@@ -81,6 +83,8 @@ const translations = {
     profile: 'Profile',
     settings: 'Settings',
     manage: 'Manage',
+    tokenControl: 'Token Control',
+    applicationMap: 'Application Map',
     api: 'API',
     apiUIEndpoints: 'UI Endpoints',
     apiFunctions: 'Functions',
@@ -244,6 +248,13 @@ function AppContent() {
           labelEn: 'Token Control',
           icon: '🔐',
           path: '/token-control'
+        },
+        {
+          id: 'application-map',
+          label: t.applicationMap,
+          labelEn: t.applicationMap,
+          icon: '🗺️',
+          path: '/application-map'
         },
         {
           id: 'api',
@@ -461,6 +472,7 @@ function AppContent() {
             <Route path="/profile" element={<div className="page-placeholder">👤 {t.profile}</div>} />
             <Route path="/manage" element={<ManagePage language={language} theme={theme} />} />
             <Route path="/token-control" element={<TokenControl language={language} theme={theme} />} />
+            <Route path="/application-map" element={<ApplicationMap language={language} theme={theme} />} />
             <Route path="/api/ui" element={<APIUIEndpoints language={language} theme={theme} appType="ulm" />} />
             <Route path="/api/functions" element={<APIFunctions language={language} theme={theme} appType="ulm" />} />
             <Route path="*" element={<Dashboard language={language} theme={theme} stats={stats} activities={activities} quickActions={quickActions} />} />

@@ -15,6 +15,7 @@ from app.core.config import settings
 from app.core.database import init_db, close_db
 from app.api.v1.router import api_router
 from app.middleware.localization_middleware import LocalizationMiddleware
+from app.middleware.api_logger import APILoggerMiddleware
 from app.core.scheduler import start_scheduler, shutdown_scheduler
 
 # Configure logging
@@ -80,6 +81,9 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Add Localization Middleware
 app.add_middleware(LocalizationMiddleware)
+
+# Add API Logger Middleware (logs all API requests/responses to database)
+app.add_middleware(APILoggerMiddleware)
 
 # Configure CORS
 app.add_middleware(

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { apiLogger } from './apiLogger';
 
 // Configure axios defaults
 const API_URL = import.meta.env.VITE_API_URL || '';
@@ -12,13 +13,17 @@ const api = axios.create({
   },
 });
 
-// Add request interceptor to include token
+// Add request interceptor to include token and log requests
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('ulm_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
+    // Store request start time for logging
+    (config as any).metadata = { startTime: new Date() };
+    
     return config;
   },
   (error) => {
@@ -107,6 +112,51 @@ api.interceptors.response.use(
         return Promise.reject(refreshError);
       }
     }
+    
+    return Promise.reject(error);
+  }
+);
+
+// Add logging interceptor (AFTER auth interceptors to capture final response)
+api.interceptors.response.use(
+  (response) => {
+    // Log successful response
+    const requestTime = (response.config as any).metadata?.startTime || new Date();
+    const responseTime = new Date();
+    
+    apiLogger.log(
+      response.config.method?.toUpperCase() || 'GET',
+      response.config.url || '',
+      response.config.data,
+      response.config.headers,
+      response.data,
+      response.headers,
+      response.status,
+      true, // success
+      requestTime,
+      responseTime
+    );
+    
+    return response;
+  },
+  (error) => {
+    // Log error response
+    const requestTime = (error.config as any)?.metadata?.startTime || new Date();
+    const responseTime = new Date();
+    
+    apiLogger.log(
+      error.config?.method?.toUpperCase() || 'GET',
+      error.config?.url || '',
+      error.config?.data,
+      error.config?.headers,
+      error.response?.data,
+      error.response?.headers,
+      error.response?.status,
+      false, // not success
+      requestTime,
+      responseTime,
+      error.message
+    );
     
     return Promise.reject(error);
   }

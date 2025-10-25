@@ -25,8 +25,8 @@ export const ApplicationMap = ({ language, theme }: ApplicationMapProps) => {
   const t = {
     he: {
       title: 'מפת האפליקציה - ULM System',
-      subtitle: 'מערכת ניהול משתמשים מתקדמת עם אימות JWT, ניהול טוקנים והשבתות משתמשים מתוזמנות',
-      systemDescription: 'ULM (User Login Manager) היא מערכת ניהול משתמשים מלאה הבנויה על React בצד הלקוח ו-FastAPI בצד השרת. המערכת מספקת אימות מאובטח עם JWT + Refresh Tokens, ניהול הרשאות, השבתות משתמשים מתוזמנות, מעקב היסטוריית פעילות ובקרת זמני תוקף טוקנים ברמת משתמש. כל הנתונים נשמרים ב-PostgreSQL והמערכת תומכת ב-3 שפות (עברית, אנגלית, ערבית) עם RTL מלא.',
+      subtitle: 'מערכת ניהול משתמשים מתקדמת עם אימות JWT, ניהול טוקנים, API Logging ויומן פיתוח',
+      systemDescription: 'ULM (User Login Manager) היא מערכת ניהול משתמשים מלאה הבנויה על React בצד הלקוח ו-FastAPI בצד השרת. המערכת מספקת: אימות מאובטח עם JWT + Refresh Tokens, ניהול הרשאות, השבתות משתמשים מתוזמנות, מעקב היסטוריית פעילות, בקרת טוקנים ברמת משתמש, API Logging מלא (Backend + Frontend), Database Viewer דינמי, ויומן פיתוח מתקדם. 19 אלמנטים, 13 טבלאות DB, 28+ endpoints, תמיכה ב-3 שפות עם RTL מלא.',
       howSystemWorks: 'איך המערכת עובדת?',
       frontend: 'Frontend',
       backend: 'Backend',
@@ -45,8 +45,8 @@ export const ApplicationMap = ({ language, theme }: ApplicationMapProps) => {
     },
     en: {
       title: 'Application Map - ULM System',
-      subtitle: 'Advanced User Management System with JWT authentication, token management and scheduled user deactivations',
-      systemDescription: 'ULM (User Login Manager) is a complete user management system built on React for the client and FastAPI for the server. The system provides secure authentication with JWT + Refresh Tokens, permission management, scheduled user deactivations, activity history tracking, and user-level token expiration control. All data is stored in PostgreSQL and the system supports 3 languages (Hebrew, English, Arabic) with full RTL support.',
+      subtitle: 'Advanced User Management System with JWT authentication, token management, API Logging and Development Journal',
+      systemDescription: 'ULM (User Login Manager) is a complete user management system built on React for the client and FastAPI for the server. The system provides: secure authentication with JWT + Refresh Tokens, permission management, scheduled user deactivations, activity history tracking, user-level token control, full API Logging (Backend + Frontend), dynamic Database Viewer, and advanced Development Journal. 19 elements, 13 DB tables, 28+ endpoints, supports 3 languages with full RTL.',
       howSystemWorks: 'How does the system work?',
       frontend: 'Frontend',
       backend: 'Backend',
@@ -65,8 +65,8 @@ export const ApplicationMap = ({ language, theme }: ApplicationMapProps) => {
     },
     ar: {
       title: 'خريطة التطبيق - نظام ULM',
-      subtitle: 'نظام إدارة مستخدمين متقدم مع مصادقة JWT وإدارة الرموز وإلغاء تنشيط المستخدمين المجدول',
-      systemDescription: 'ULM (مدير تسجيل دخول المستخدم) هو نظام إدارة مستخدمين كامل مبني على React للعميل و FastAPI للخادم. يوفر النظام مصادقة آمنة مع JWT + Refresh Tokens وإدارة الصلاحيات وإلغاء تنشيط المستخدمين المجدول وتتبع سجل النشاط والتحكم في انتهاء صلاحية الرموز على مستوى المستخدم. يتم تخزين جميع البيانات في PostgreSQL ويدعم النظام 3 لغات (العبرية والإنجليزية والعربية) مع دعم RTL كامل.',
+      subtitle: 'نظام إدارة مستخدمين متقدم مع مصادقة JWT وإدارة الرموز وسجل API وسجل التطوير',
+      systemDescription: 'ULM (مدير تسجيل دخول المستخدم) هو نظام إدارة مستخدمين كامل مبني على React للعميل و FastAPI للخادم. يوفر النظام: مصادقة آمنة مع JWT + Refresh Tokens، إدارة الصلاحيات، إلغاء تنشيط المستخدمين المجدول، تتبع سجل النشاط، التحكم في الرموز على مستوى المستخدم، سجل API كامل (Backend + Frontend)، عارض قاعدة بيانات ديناميكي، وسجل تطوير متقدم. 19 عنصراً، 13 جدول DB، 28+ endpoints، يدعم 3 لغات مع RTL كامل.',
       howSystemWorks: 'كيف يعمل النظام؟',
       frontend: 'الواجهة الأمامية',
       backend: 'الخلفية',
@@ -98,7 +98,7 @@ export const ApplicationMap = ({ language, theme }: ApplicationMapProps) => {
         'src/components/',
         'src/api/axios.config.ts'
       ],
-      dependencies: ['backend-api', 'auth-service'],
+      dependencies: ['backend-api', 'auth-service', 'frontend-logger'],
       status: 'active'
     },
     {
@@ -115,6 +115,46 @@ export const ApplicationMap = ({ language, theme }: ApplicationMapProps) => {
         'TokenControl.tsx'
       ],
       dependencies: ['frontend-react'],
+      status: 'active'
+    },
+    {
+      id: 'api-logs-viewer',
+      type: 'frontend',
+      name: 'API Logs Viewer',
+      description: 'קומפוננטה מתקדמת לצפייה וניתוח לוגים של Backend ו-Frontend. מציגה טבלת logs עם סינון לפי method, endpoint, status, user, וטווח תאריכים. כוללת search, pagination, export ל-CSV, וצפייה מפורטת של request/response bodies. תומכת בצבעים לפי סטטוס (200=ירוק, 4xx=כתום, 5xx=אדום) ומציגה duration, timestamps, וerror messages.',
+      tech: 'React + TypeScript + CSS',
+      files: [
+        'components/APILogs/APILogs.tsx',
+        'components/APILogs/APILogs.css'
+      ],
+      dependencies: ['frontend-react', 'api-logs-service'],
+      status: 'active'
+    },
+    {
+      id: 'database-viewer',
+      type: 'frontend',
+      name: 'Database Viewer',
+      description: 'קומפוננטה דינמית לצפייה בכל טבלאות מסד הנתונים. מושכת רשימת טבלאות מ-information_schema, מציגה את המבנה (columns + types) ואת הנתונים בטבלה. כוללת search, pagination, sorting, ו-CSV export. 100% דינמית - תומכת בכל טבלה חדשה ללא שינוי קוד. מציגה גם סטטיסטיקות (row count, size).',
+      tech: 'React + TypeScript + CSS',
+      files: [
+        'components/DatabaseViewer/DatabaseViewer.tsx',
+        'components/DatabaseViewer/DatabaseViewer.css'
+      ],
+      dependencies: ['frontend-react', 'database-viewer-service'],
+      status: 'active'
+    },
+    {
+      id: 'dev-journal-viewer',
+      type: 'frontend',
+      name: 'Development Journal',
+      description: 'מערכת מלאה לתיעוד סשני פיתוח. מציגה רשימת סשנים עם title, duration, dates. כל סשן ניתן לפתוח ולצפות בצעדים כרונולוגיים (user prompt, AI understanding, actions, result) ובמצב מערכת (before/after). כוללת 3 קומפוננטות: DevJournal (רשימה), SessionSteps (צעדים), SystemState (מצב). תומכת ב-tabs נפרדים לכל view.',
+      tech: 'React + TypeScript + CSS',
+      files: [
+        'components/DevJournal/DevJournal.tsx',
+        'components/DevJournal/SessionSteps.tsx',
+        'components/DevJournal/SystemState.tsx'
+      ],
+      dependencies: ['frontend-react', 'dev-journal-service'],
       status: 'active'
     },
     
@@ -182,17 +222,95 @@ export const ApplicationMap = ({ language, theme }: ApplicationMapProps) => {
       dependencies: ['database-postgres', 'auth-service'],
       status: 'active'
     },
+    {
+      id: 'api-logger-middleware',
+      type: 'service',
+      name: 'API Logger Middleware',
+      description: 'Middleware אוטומטי שמתעד כל בקשת API ב-Backend. לוכד method, endpoint, headers, request/response bodies, status code, duration, user_id, ועוד. משתמש ב-BackgroundTask של Starlette לשמירה אסינכרונית ל-DB ללא blocking של ה-response. תומך ב-filtering של endpoints רגישים ושמירת error stack traces. כולל 5 indexes לחיפוש מהיר.',
+      tech: 'Starlette Middleware + asyncpg',
+      endpoints: [
+        'GET /api/v1/logs/backend',
+        'GET /api/v1/logs/backend/stats',
+        'POST /api/v1/logs/backend/clear'
+      ],
+      files: ['app/middleware/api_logger.py', 'app/api/routes/api_logs.py'],
+      dependencies: ['database-postgres', 'backend-api'],
+      status: 'active'
+    },
+    {
+      id: 'frontend-logger',
+      type: 'service',
+      name: 'Frontend Logger Service',
+      description: 'שירות logging בצד Frontend המתעד כל בקשת API דרך Axios interceptors. לוכד method, URL, headers, request/response data, duration, session_id, browser info, ועוד. משתמש ב-batching (שומר 10 logs ב-memory ושולח ב-batch אחד) להפחתת עומס. תומך ב-retry logic ו-offline mode. כל log נשמר בטבלת api_logs_frontend.',
+      tech: 'Axios Interceptors + TypeScript',
+      endpoints: [
+        'POST /api/v1/logs/frontend/batch',
+        'GET /api/v1/logs/frontend',
+        'POST /api/v1/logs/frontend/clear'
+      ],
+      files: ['api/apiLogger.ts', 'api/axios.config.ts'],
+      dependencies: ['frontend-react', 'api-logger-middleware'],
+      status: 'active'
+    },
+    {
+      id: 'api-logs-service',
+      type: 'service',
+      name: 'API Logs Service',
+      description: 'שירות מלא לניהול וצפייה בלוגים של Backend ו-Frontend. מספק endpoints לשליפת logs עם filters (method, endpoint, status, user, dates), סטטיסטיקות (requests per hour, top endpoints, error rates, avg duration), וניקוי logs ישנים. כולל pagination, sorting, וsearch. תומך ב-JSON export.',
+      tech: 'FastAPI + PostgreSQL',
+      endpoints: [
+        'GET /api/v1/logs/backend',
+        'GET /api/v1/logs/frontend',
+        'GET /api/v1/logs/backend/stats',
+        'GET /api/v1/logs/frontend/stats'
+      ],
+      files: ['app/api/routes/api_logs.py', 'app/models/api_logs.py'],
+      dependencies: ['database-postgres', 'auth-service'],
+      status: 'active'
+    },
+    {
+      id: 'database-viewer-service',
+      type: 'service',
+      name: 'Database Viewer Service',
+      description: 'שירות דינמי לצפייה במבנה ובתוכן של כל טבלאות ה-DB. משתמש ב-information_schema לשליפת רשימת טבלאות, columns, types, constraints. מספק endpoints לשליפת נתונים מכל טבלה עם pagination, filtering, ו-sorting. 100% דינמי - תומך בכל טבלה חדשה ללא שינוי קוד. כולל גם סטטיסטיקות (row count, table size).',
+      tech: 'FastAPI + information_schema',
+      endpoints: [
+        'GET /api/v1/database/tables',
+        'GET /api/v1/database/tables/{name}/schema',
+        'GET /api/v1/database/tables/{name}/data'
+      ],
+      files: ['app/api/routes/database_viewer.py'],
+      dependencies: ['database-postgres', 'auth-service'],
+      status: 'active'
+    },
+    {
+      id: 'dev-journal-service',
+      type: 'service',
+      name: 'Development Journal Service',
+      description: 'שירות מלא לתיעוד וניהול סשני פיתוח. מאפשר יצירת סשן חדש, הוספת צעדים (user prompt, AI understanding, actions, result), תיעוד מצב מערכת (before/after), וצפייה בהיסטוריה מלאה. כולל 12 endpoints ל-CRUD מלא. תומך ב-duration tracking, instructions_for_next, ו-JSON export. שומר 3 טבלאות: sessions, steps, system_states.',
+      tech: 'FastAPI + PostgreSQL',
+      endpoints: [
+        'GET /api/v1/dev-journal/sessions',
+        'POST /api/v1/dev-journal/sessions',
+        'GET /api/v1/dev-journal/sessions/{id}/steps',
+        'POST /api/v1/dev-journal/steps',
+        'GET /api/v1/dev-journal/ai/project-context'
+      ],
+      files: ['app/api/routes/dev_journal.py', 'app/models/dev_journal.py'],
+      dependencies: ['database-postgres', 'auth-service'],
+      status: 'active'
+    },
     
     // API Routes
     {
       id: 'api-router',
       type: 'route',
       name: 'API Router',
-      description: 'נתב API ראשי המרכז את כל ה-routes',
+      description: 'נתב API ראשי המרכז את כל ה-routes. מנהל 28+ endpoints במבנה modular עם prefix /api/v1. כולל routes לאימות, ניהול משתמשים, token settings, user status, logging, database viewer, ו-dev journal. כל route מגדיר tags לתיעוד Swagger ו-dependencies לאימות.',
       tech: 'FastAPI Router',
       endpoints: ['/api/v1/*'],
       files: ['app/api/v1/router.py'],
-      dependencies: ['auth-service', 'token-service', 'user-status-service'],
+      dependencies: ['auth-service', 'token-service', 'user-status-service', 'api-logs-service', 'database-viewer-service', 'dev-journal-service'],
       status: 'active'
     },
     
@@ -201,13 +319,13 @@ export const ApplicationMap = ({ language, theme }: ApplicationMapProps) => {
       id: 'database-postgres',
       type: 'database',
       name: 'PostgreSQL Database',
-      description: 'מסד נתונים יחסי מלא (ulm_db) המאחסן את כל נתוני המערכת: טבלת users (משתמשים עם username, password hash, email, role, status), refresh_tokens (מעקב אחרי טוקני רענון פעילים), user_token_settings (הגדרות זמן תוקף אישיות), user_activity_history (היסטוריית פעולות), scheduled_deactivations (השבתות מתוזמנות). תומך בחיבורים מרובים, transactions, indexes מותאמים, ובחיבור מאובטח דרך asyncpg.',
+      description: 'מסד נתונים יחסי מלא (ulm_db) עם 13 טבלאות: users (משתמשים + אימות), roles (הרשאות), refresh_tokens (טוקני רענון), password_resets (איפוס סיסמאות), token_settings (הגדרות טוקנים אישיות), scheduled_user_actions (פעולות מתוזמנות), sessions (סשנים פעילים), user_activity_history (היסטוריה), api_logs_backend (לוגים Backend), api_logs_frontend (לוגים Frontend), development_sessions (יומן פיתוח), development_steps (צעדי פיתוח), system_states (מצב מערכת). כולל 10+ indexes, foreign keys, ותמיכה מלאה ב-async operations דרך asyncpg.',
       tech: 'PostgreSQL 17',
       files: [
-        'users table',
-        'refresh_tokens table',
-        'token_settings table',
-        'user_activity_history table'
+        'users, roles, refresh_tokens',
+        'token_settings, sessions',
+        'api_logs_backend, api_logs_frontend',
+        'development_sessions, development_steps, system_states'
       ],
       status: 'active'
     },

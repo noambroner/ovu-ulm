@@ -11,6 +11,7 @@ import { APIFunctions } from './components/APIFunctions/APIFunctions';
 import { ApplicationMap } from './components/ApplicationMap/ApplicationMap';
 import { DatabaseViewer } from './components/DatabaseViewer/DatabaseViewer';
 import { APILogs } from './components/APILogs/APILogs';
+import { DevJournal, SessionSteps, SystemState } from './components/DevJournal';
 import './App.css';
 import './components/Layout/Layout.css';
 
@@ -52,6 +53,7 @@ const translations = {
     logs: 'לוגים',
     backendLogs: 'לוג Backend',
     frontendLogs: 'לוג Frontend',
+    devJournal: 'יומן פיתוח',
     api: 'API',
     apiUIEndpoints: 'UI Endpoints',
     apiFunctions: 'פונקציות',
@@ -95,6 +97,7 @@ const translations = {
     logs: 'Logs',
     backendLogs: 'Backend Logs',
     frontendLogs: 'Frontend Logs',
+    devJournal: 'Development Journal',
     api: 'API',
     apiUIEndpoints: 'UI Endpoints',
     apiFunctions: 'Functions',
@@ -295,6 +298,13 @@ function AppContent() {
               path: '/logs/frontend'
             }
           ]
+        },
+        {
+          id: 'dev-journal',
+          label: t.devJournal,
+          labelEn: t.devJournal,
+          icon: '📝',
+          path: '/dev-journal'
         },
         {
           id: 'api',
@@ -516,6 +526,9 @@ function AppContent() {
             <Route path="/database-viewer" element={<DatabaseViewer language={language} theme={theme} />} />
             <Route path="/logs/backend" element={<APILogs language={language} theme={theme} logType="backend" />} />
             <Route path="/logs/frontend" element={<APILogs language={language} theme={theme} logType="frontend" />} />
+            <Route path="/dev-journal" element={<DevJournal language={language} theme={theme} />} />
+            <Route path="/dev-journal/session/:sessionId/steps" element={<SessionSteps language={language} theme={theme} />} />
+            <Route path="/dev-journal/session/:sessionId/state" element={<SystemState language={language} theme={theme} />} />
             <Route path="/api/ui" element={<APIUIEndpoints language={language} theme={theme} appType="ulm" />} />
             <Route path="/api/functions" element={<APIFunctions language={language} theme={theme} appType="ulm" />} />
             <Route path="*" element={<Dashboard language={language} theme={theme} stats={stats} activities={activities} quickActions={quickActions} />} />

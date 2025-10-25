@@ -1,0 +1,248 @@
+.dev-journal {
+  padding: 2rem;
+  min-height: 100vh;
+  background: var(--background-color);
+}
+
+.dev-journal.dark {
+  --background-color: #1a1a2e;
+  --card-background: #16213e;
+  --text-primary: #eee;
+  --text-secondary: #aaa;
+  --border-color: #0f3460;
+  --hover-bg: #1e3a5f;
+  --badge-bg: #2563eb;
+}
+
+.dev-journal.light {
+  --background-color: #f5f7fa;
+  --card-background: #ffffff;
+  --text-primary: #2c3e50;
+  --text-secondary: #7f8c8d;
+  --border-color: #e1e8ed;
+  --hover-bg: #f0f3f6;
+  --badge-bg: #2563eb;
+}
+
+.journal-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+.journal-title {
+  font-size: 2.5rem;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+
+.journal-subtitle {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+}
+
+.refresh-btn {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  margin-top: 1rem;
+}
+
+.refresh-btn:hover {
+  background: #1d4ed8;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
+}
+
+.sessions-stats {
+  background: var(--card-background);
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  margin-bottom: 2rem;
+  color: var(--text-primary);
+  font-size: 1.1rem;
+}
+
+.sessions-table-wrapper {
+  background: var(--card-background);
+  border-radius: 12px;
+  border: 2px solid var(--border-color);
+  overflow-x: auto;
+}
+
+.sessions-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.sessions-table thead {
+  background: var(--border-color);
+}
+
+.sessions-table th {
+  padding: 1rem;
+  text-align: right;
+  font-weight: 600;
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--border-color);
+}
+
+[dir="ltr"] .sessions-table th {
+  text-align: left;
+}
+
+.sessions-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+  text-align: right;
+}
+
+[dir="ltr"] .sessions-table td {
+  text-align: left;
+}
+
+.session-row {
+  transition: background 0.2s ease;
+  cursor: pointer;
+}
+
+.session-row:hover {
+  background: var(--hover-bg);
+}
+
+.session-id {
+  font-weight: 600;
+}
+
+.id-badge {
+  background: var(--badge-bg);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.session-title {
+  font-weight: 600;
+  color: var(--text-primary);
+  max-width: 300px;
+}
+
+.session-time {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.session-duration {
+  font-weight: 500;
+  color: #10b981;
+}
+
+.session-summary {
+  max-width: 400px;
+}
+
+.summary-text {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.session-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.action-btn {
+  background: none;
+  border: 2px solid var(--border-color);
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: all 0.3s ease;
+}
+
+.action-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.steps-btn:hover {
+  border-color: #2563eb;
+  background: rgba(37, 99, 235, 0.1);
+}
+
+.state-btn:hover {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.loading-container,
+.error-container,
+.no-sessions-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  color: var(--text-secondary);
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid var(--border-color);
+  border-top: 4px solid #2563eb;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-icon,
+.no-sessions-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 768px) {
+  .dev-journal {
+    padding: 1rem;
+  }
+
+  .journal-title {
+    font-size: 2rem;
+  }
+
+  .sessions-table {
+    font-size: 0.85rem;
+  }
+
+  .sessions-table th,
+  .sessions-table td {
+    padding: 0.5rem;
+  }
+
+  .session-title,
+  .session-summary {
+    max-width: 150px;
+  }
+}
+

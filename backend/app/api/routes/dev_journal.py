@@ -1,0 +1,421 @@
+"""
+Development Journal Routes
+API endpoints for managing development sessions, steps, and system state
+"""
+from typing import Dict, Any, List, Optional
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import select, func, desc
+from sqlalchemy.ext.asyncio import AsyncSession
+from datetime import datetime
+from pydantic import BaseModel
+
+from app.core.database import get_db
+from app.core.security import get_current_user
+from app.models.dev_journal import DevelopmentSession, DevelopmentStep, SystemState
+
+router = APIRouter()
+
+
+# Pydantic Schemas
+class SessionCreate(BaseModel):
+    title: str
+    summary: Optional[str] = None
+    instructions_for_next: Optional[str] = None
+
+class SessionUpdate(BaseModel):
+    title: Optional[str] = None
+    summary: Optional[str] = None
+    end_time: Optional[datetime] = None
+    instructions_for_next: Optional[str] = None
+
+class StepCreate(BaseModel):
+    session_id: int
+    step_number: int
+    user_prompt: str
+    ai_understanding: Optional[str] = None
+    ai_actions: Optional[str] = None
+    result: Optional[str] = None
+
+class SystemStateCreate(BaseModel):
+    session_id: int
+    state_at_start: str
+    state_at_end: Optional[str] = None
+    changes_summary: Optional[str] = None
+
+class SystemStateUpdate(BaseModel):
+    state_at_end: Optional[str] = None
+    changes_summary: Optional[str] = None
+
+
+# Sessions Endpoints
+@router.get(
+    "/sessions",
+    summary="Get all development sessions",
+    description="Returns list of all development sessions with pagination"
+)
+async def get_sessions(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=1000),
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user)
+) -> Dict[str, Any]:
+    """Get all development sessions"""
+    try:
+        # Get total count
+        count_result = await db.execute(select(func.count()).select_from(DevelopmentSession))
+        total = count_result.scalar()
+        
+        # Get sessions (newest first)
+        result = await db.execute(
+            select(DevelopmentSession)
+            .order_by(desc(DevelopmentSession.start_time))
+            .offset(skip)
+            .limit(limit)
+        )
+        sessions = result.scalars().all()
+        
+        # Convert to dict
+        sessions_data = []
+        for session in sessions:
+            # Calculate duration
+            duration = None
+            if session.end_time and session.start_time:
+                duration = int((session.end_time - session.start_time).total_seconds() / 60)  # minutes
+            
+            sessions_data.append({
+                "id": session.id,
+                "title": session.title,
+                "summary": session.summary,
+                "start_time": session.start_time.isoformat() if session.start_time else None,
+                "end_time": session.end_time.isoformat() if session.end_time else None,
+                "duration_minutes": duration,
+                "instructions_for_next": session.instructions_for_next,
+                "created_at": session.created_at.isoformat() if session.created_at else None
+            })
+        
+        return {
+            "success": True,
+            "sessions": sessions_data,
+            "pagination": {
+                "total": total,
+                "skip": skip,
+                "limit": limit,
+                "returned": len(sessions_data)
+            }
+        }
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch sessions: {str(e)}")
+
+
+@router.get(
+    "/sessions/{session_id}",
+    summary="Get specific session details"
+)
+async def get_session(
+    session_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user)
+) -> Dict[str, Any]:
+    """Get details of a specific session"""
+    try:
+        result = await db.execute(
+            select(DevelopmentSession).where(DevelopmentSession.id == session_id)
+        )
+        session = result.scalar_one_or_none()
+        
+        if not session:
+            raise HTTPException(status_code=404, detail="Session not found")
+        
+        # Calculate duration
+        duration = None
+        if session.end_time and session.start_time:
+            duration = int((session.end_time - session.start_time).total_seconds() / 60)
+        
+        return {
+            "success": True,
+            "session": {
+                "id": session.id,
+                "title": session.title,
+                "summary": session.summary,
+                "start_time": session.start_time.isoformat() if session.start_time else None,
+                "end_time": session.end_time.isoformat() if session.end_time else None,
+                "duration_minutes": duration,
+                "instructions_for_next": session.instructions_for_next,
+                "created_at": session.created_at.isoformat() if session.created_at else None
+            }
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch session: {str(e)}")
+
+
+@router.post(
+    "/sessions",
+    summary="Create new development session"
+)
+async def create_session(
+    session_data: SessionCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user)
+) -> Dict[str, Any]:
+    """Create a new development session"""
+    try:
+        new_session = DevelopmentSession(
+            title=session_data.title,
+            summary=session_data.summary,
+            instructions_for_next=session_data.instructions_for_next
+        )
+        
+        db.add(new_session)
+        await db.commit()
+        await db.refresh(new_session)
+        
+        return {
+            "success": True,
+            "session_id": new_session.id,
+            "message": f"Session created successfully with ID: {new_session.id}"
+        }
+    
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to create session: {str(e)}")
+
+
+@router.put(
+    "/sessions/{session_id}",
+    summary="Update development session"
+)
+async def update_session(
+    session_id: int,
+    session_data: SessionUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user)
+) -> Dict[str, Any]:
+    """Update an existing session"""
+    try:
+        result = await db.execute(
+            select(DevelopmentSession).where(DevelopmentSession.id == session_id)
+        )
+        session = result.scalar_one_or_none()
+        
+        if not session:
+            raise HTTPException(status_code=404, detail="Session not found")
+        
+        # Update fields
+        if session_data.title is not None:
+            session.title = session_data.title
+        if session_data.summary is not None:
+            session.summary = session_data.summary
+        if session_data.end_time is not None:
+            session.end_time = session_data.end_time
+        if session_data.instructions_for_next is not None:
+            session.instructions_for_next = session_data.instructions_for_next
+        
+        await db.commit()
+        
+        return {
+            "success": True,
+            "message": f"Session {session_id} updated successfully"
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to update session: {str(e)}")
+
+
+# Steps Endpoints
+@router.get(
+    "/sessions/{session_id}/steps",
+    summary="Get all steps for a session"
+)
+async def get_session_steps(
+    session_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user)
+) -> Dict[str, Any]:
+    """Get all steps for a specific session"""
+    try:
+        result = await db.execute(
+            select(DevelopmentStep)
+            .where(DevelopmentStep.session_id == session_id)
+            .order_by(DevelopmentStep.step_number)
+        )
+        steps = result.scalars().all()
+        
+        steps_data = []
+        for step in steps:
+            steps_data.append({
+                "id": step.id,
+                "step_number": step.step_number,
+                "user_prompt": step.user_prompt,
+                "ai_understanding": step.ai_understanding,
+                "ai_actions": step.ai_actions,
+                "result": step.result,
+                "created_at": step.created_at.isoformat() if step.created_at else None
+            })
+        
+        return {
+            "success": True,
+            "session_id": session_id,
+            "steps": steps_data,
+            "total_steps": len(steps_data)
+        }
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch steps: {str(e)}")
+
+
+@router.post(
+    "/steps",
+    summary="Add new step to session"
+)
+async def create_step(
+    step_data: StepCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user)
+) -> Dict[str, Any]:
+    """Add a new step to a session"""
+    try:
+        new_step = DevelopmentStep(
+            session_id=step_data.session_id,
+            step_number=step_data.step_number,
+            user_prompt=step_data.user_prompt,
+            ai_understanding=step_data.ai_understanding,
+            ai_actions=step_data.ai_actions,
+            result=step_data.result
+        )
+        
+        db.add(new_step)
+        await db.commit()
+        await db.refresh(new_step)
+        
+        return {
+            "success": True,
+            "step_id": new_step.id,
+            "message": f"Step {step_data.step_number} added to session {step_data.session_id}"
+        }
+    
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to create step: {str(e)}")
+
+
+# System State Endpoints
+@router.get(
+    "/sessions/{session_id}/state",
+    summary="Get system state for session"
+)
+async def get_system_state(
+    session_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user)
+) -> Dict[str, Any]:
+    """Get system state for a specific session"""
+    try:
+        result = await db.execute(
+            select(SystemState).where(SystemState.session_id == session_id)
+        )
+        state = result.scalar_one_or_none()
+        
+        if not state:
+            return {
+                "success": True,
+                "session_id": session_id,
+                "state": None,
+                "message": "No system state recorded for this session"
+            }
+        
+        return {
+            "success": True,
+            "session_id": session_id,
+            "state": {
+                "id": state.id,
+                "state_at_start": state.state_at_start,
+                "state_at_end": state.state_at_end,
+                "changes_summary": state.changes_summary,
+                "created_at": state.created_at.isoformat() if state.created_at else None,
+                "updated_at": state.updated_at.isoformat() if state.updated_at else None
+            }
+        }
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch system state: {str(e)}")
+
+
+@router.post(
+    "/state",
+    summary="Create system state for session"
+)
+async def create_system_state(
+    state_data: SystemStateCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user)
+) -> Dict[str, Any]:
+    """Create system state for a session"""
+    try:
+        new_state = SystemState(
+            session_id=state_data.session_id,
+            state_at_start=state_data.state_at_start,
+            state_at_end=state_data.state_at_end,
+            changes_summary=state_data.changes_summary
+        )
+        
+        db.add(new_state)
+        await db.commit()
+        await db.refresh(new_state)
+        
+        return {
+            "success": True,
+            "state_id": new_state.id,
+            "message": f"System state created for session {state_data.session_id}"
+        }
+    
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to create system state: {str(e)}")
+
+
+@router.put(
+    "/sessions/{session_id}/state",
+    summary="Update system state for session"
+)
+async def update_system_state(
+    session_id: int,
+    state_data: SystemStateUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user)
+) -> Dict[str, Any]:
+    """Update system state for a session"""
+    try:
+        result = await db.execute(
+            select(SystemState).where(SystemState.session_id == session_id)
+        )
+        state = result.scalar_one_or_none()
+        
+        if not state:
+            raise HTTPException(status_code=404, detail="System state not found")
+        
+        # Update fields
+        if state_data.state_at_end is not None:
+            state.state_at_end = state_data.state_at_end
+        if state_data.changes_summary is not None:
+            state.changes_summary = state_data.changes_summary
+        
+        await db.commit()
+        
+        return {
+            "success": True,
+            "message": f"System state updated for session {session_id}"
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to update system state: {str(e)}")
+

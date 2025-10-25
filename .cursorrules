@@ -223,6 +223,49 @@ git push
 
 ---
 
+## 📝 END OF SESSION - Mandatory Documentation
+
+**At the END of EVERY session, you MUST document 3 things:**
+
+### 1. Create Session Summary
+Use Python script to add session to database:
+```python
+# Create session with: title, summary (detailed!), instructions_for_next
+```
+
+### 2. Document All Steps (development_steps)
+Each user interaction = separate step:
+```python
+# For each step: step_number, user_prompt, ai_understanding, ai_actions, result
+```
+
+### 3. Document System State (system_states)
+```python
+# state_at_start: Initial state (files, features, commits, deployments)
+# state_at_end: Final state (new/updated files, commits, deployments)
+# changes_summary: Summary of all changes
+```
+
+**Example structure:**
+```
+state_at_start:
+- Issue: columns not showing in UI
+- Files: api_logs.py (not returning new fields)
+- Git: commit abc123
+- Sessions: 1
+
+state_at_end:
+- Fixed: columns showing ✅
+- New page: /dev-guidelines ✅
+- Files: + DevelopmentGuidelines.tsx, ~ api_logs.py
+- Git: 4 new commits (abc123 → def456)
+- Sessions: 2
+```
+
+**This documentation is NOT optional!**
+
+---
+
 ## ⚠️ Remember:
 
 1. **Check /dev-guidelines FIRST** before ANY work
@@ -233,5 +276,6 @@ git push
 6. **Update TypeScript interfaces** when backend changes
 7. **Support 3 languages** for all UI text
 8. **Commit after successful deployment**
+9. **Document session END** - session, steps, system state (MANDATORY!)
 
 **This is NOT optional - it's a mandatory part of the development process!**

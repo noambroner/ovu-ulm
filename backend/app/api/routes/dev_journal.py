@@ -654,3 +654,42 @@ async def get_project_context_for_ai(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch project context: {str(e)}")
 
+
+@router.post(
+    "/ai/create-session",
+    summary="Create session for AI (no authentication required)",
+    description="Creates a new development session. This endpoint is specifically for AI agents to document their work without needing authentication."
+)
+async def create_session_for_ai(
+    session_data: SessionCreate,
+    db: AsyncSession = Depends(get_db)
+) -> Dict[str, Any]:
+    """Create a new development session for AI without authentication"""
+    try:
+        new_session = DevelopmentSession(
+            title=session_data.title,
+            summary=session_data.summary,
+            instructions_for_next=session_data.instructions_for_next
+        )
+        
+        db.add(new_session)
+        await db.commit()
+        await db.refresh(new_session)
+        
+        return {
+            "success": True,
+            "session_id": new_session.id,
+            "message": f"Session #{new_session.id} created successfully",
+            "session": {
+                "id": new_session.id,
+                "title": new_session.title,
+                "summary": new_session.summary,
+                "start_time": new_session.start_time.isoformat() if new_session.start_time else None,
+                "instructions_for_next": new_session.instructions_for_next
+            }
+        }
+    
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to create session: {str(e)}")
+

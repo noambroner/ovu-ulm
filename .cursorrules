@@ -1,23 +1,51 @@
 # ULM Project - Cursor Rules for AI Assistant
 
-## 🤖 Development Journal Integration
+## 🤖 MANDATORY: Session Start Checklist
 
-### At START of Every Session:
+### At START of Every Session - MUST DO THIS FIRST:
 
-1. **Check Previous Session**
+**STEP 1: Get Complete Project Context**
 ```bash
-curl -s https://ulm-rct.ovu.co.il/api/v1/dev-journal/ai/latest-session
+curl -s https://ulm-rct.ovu.co.il/api/v1/dev-journal/ai/project-context
 ```
 
-2. **Read the Response** to get:
-   - `instructions_for_next`: What needs to be done
-   - `next_session_number`: The new session ID
-   - `latest_session.summary`: Context from last session
+**STEP 2: Present to User**
+You MUST show the user:
+```
+╔═══════════════════════════════════════════════════════╗
+║ 🎯 ULM Development Session #{current_session_number} ║
+╠═══════════════════════════════════════════════════════╣
+║                                                        ║
+║ 📋 Previous Session: #{latest_session.id}            ║
+║    Title: {latest_session.title}                      ║
+║    Duration: {duration} hours                         ║
+║                                                        ║
+║ 📝 Tasks for This Session:                           ║
+║    {instructions_for_next - each line}               ║
+║                                                        ║
+║ 🏗️ Architecture:                                      ║
+║    - Frontend: 64.176.173.105 (React/TypeScript)     ║
+║    - Backend: 64.176.171.223 (FastAPI/Python)        ║
+║    - Database: PostgreSQL 17 (13 tables)             ║
+║                                                        ║
+║ 🔧 Tech Stack:                                        ║
+║    Backend: FastAPI + SQLAlchemy async + JWT         ║
+║    Frontend: React 18 + TypeScript + RTL             ║
+║                                                        ║
+║ 📊 Current Features:                                  ║
+║    {list current_features}                            ║
+║                                                        ║
+║ ⚙️ Coding Standards:                                  ║
+║    - Backend: async/await, snake_case, type hints    ║
+║    - Frontend: hooks, camelCase, RTL support         ║
+║                                                        ║
+╚═══════════════════════════════════════════════════════╝
 
-3. **Inform User** about:
-   - Previous session summary
-   - Current session number
-   - Tasks from instructions_for_next
+Ready to start! What would you like to work on first?
+```
+
+**STEP 3: Confirm Understanding**
+Wait for user to acknowledge before starting work.
 
 ### During Session:
 

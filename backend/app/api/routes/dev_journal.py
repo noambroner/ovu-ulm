@@ -518,3 +518,139 @@ async def get_sessions_summary_for_ai(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch sessions summary: {str(e)}")
 
+
+@router.get(
+    "/ai/project-context",
+    summary="Get complete project context (for AI session start)",
+    description="Returns comprehensive project information: architecture, tech stack, coding standards, latest session, and next steps."
+)
+async def get_project_context_for_ai(
+    db: AsyncSession = Depends(get_db)
+) -> Dict[str, Any]:
+    """Get complete project context for AI to start a new session"""
+    try:
+        # Get latest session
+        result = await db.execute(
+            select(DevelopmentSession)
+            .order_by(desc(DevelopmentSession.id))
+            .limit(1)
+        )
+        latest_session = result.scalar_one_or_none()
+        
+        next_session_number = 1
+        instructions = "This is the first session. Set up the development environment and review project structure."
+        
+        if latest_session:
+            next_session_number = latest_session.id + 1
+            instructions = latest_session.instructions_for_next or "Continue development. Check latest changes and plan next features."
+        
+        # Project context
+        context = {
+            "success": True,
+            "current_session_number": next_session_number,
+            "project_info": {
+                "name": "ULM - User Login Manager",
+                "description": "Multi-language user management system with JWT authentication, token control, and comprehensive logging",
+                "version": "1.0.0",
+                "languages": ["Hebrew (primary)", "English", "Arabic"],
+                "rtl_support": True
+            },
+            "architecture": {
+                "servers": [
+                    {
+                        "name": "Frontend Server",
+                        "ip": "64.176.173.105",
+                        "tech": "Nginx + React/Flutter Apps",
+                        "port": 80
+                    },
+                    {
+                        "name": "Backend Server",
+                        "ip": "64.176.171.223",
+                        "tech": "FastAPI (Python)",
+                        "port": 8001
+                    },
+                    {
+                        "name": "Database Server",
+                        "ip": "64.177.67.215",
+                        "tech": "PostgreSQL 17 + Redis",
+                        "port": 5432
+                    }
+                ]
+            },
+            "tech_stack": {
+                "backend": {
+                    "framework": "FastAPI",
+                    "language": "Python 3.11+",
+                    "orm": "SQLAlchemy (async)",
+                    "auth": "JWT (python-jose)",
+                    "patterns": ["async/await", "dependency injection", "middleware"]
+                },
+                "frontend": {
+                    "framework": "React 18",
+                    "language": "TypeScript",
+                    "routing": "React Router v6",
+                    "http": "Axios",
+                    "styling": "CSS Modules + RTL support"
+                },
+                "database": {
+                    "primary": "PostgreSQL 17",
+                    "cache": "Redis",
+                    "tables": 13,
+                    "orm": "SQLAlchemy async"
+                }
+            },
+            "coding_standards": {
+                "backend": {
+                    "style": "PEP 8",
+                    "naming": "snake_case for functions, PascalCase for classes",
+                    "async": "Always use async/await for DB operations",
+                    "docs": "Type hints + docstrings required",
+                    "error_handling": "Use HTTPException with proper status codes"
+                },
+                "frontend": {
+                    "style": "ESLint + Prettier",
+                    "naming": "camelCase for functions, PascalCase for components",
+                    "components": "Functional components with hooks",
+                    "docs": "JSDoc for complex functions",
+                    "rtl": "All components must support RTL/LTR"
+                }
+            },
+            "current_features": [
+                "JWT Authentication (login, refresh, logout)",
+                "User Management (CRUD, status control, scheduling)",
+                "Token Settings (per-user expiration control)",
+                "API Logging (Backend + Frontend with middleware)",
+                "Database Viewer (dynamic table viewing)",
+                "Application Map (interactive architecture visualization)",
+                "Development Journal (session tracking with steps)"
+            ],
+            "database_tables": [
+                "users", "roles", "refresh_tokens", "password_resets",
+                "token_settings", "scheduled_user_actions", "sessions",
+                "api_logs_backend", "api_logs_frontend",
+                "development_sessions", "development_steps", "system_states"
+            ],
+            "latest_session": {
+                "id": latest_session.id if latest_session else None,
+                "title": latest_session.title if latest_session else None,
+                "duration_minutes": int((latest_session.end_time - latest_session.start_time).total_seconds() / 60) if latest_session and latest_session.end_time else None,
+                "summary": latest_session.summary[:300] + "..." if latest_session and latest_session.summary and len(latest_session.summary) > 300 else (latest_session.summary if latest_session else None)
+            } if latest_session else None,
+            "next_steps": {
+                "session_number": next_session_number,
+                "instructions": instructions,
+                "reminder": "Document all steps in dev journal at end of session"
+            },
+            "deployment": {
+                "method": "Manual SCP + SSH",
+                "frontend": "Build with 'npm run build', upload dist/* to frontend server",
+                "backend": "Upload .py files, restart uvicorn",
+                "git": "Always commit and push to GitHub after deployment"
+            }
+        }
+        
+        return context
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch project context: {str(e)}")
+

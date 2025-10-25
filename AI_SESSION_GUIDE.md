@@ -7,28 +7,37 @@ This guide helps the AI assistant track development sessions, understand project
 
 ## 🚀 At the START of Each Session
 
-### 1. **Check for Previous Session**
+### **MANDATORY STEP 1: Get Complete Project Context**
 ```bash
-curl -s https://ulm-rct.ovu.co.il/api/v1/dev-journal/ai/latest-session
+curl -s https://ulm-rct.ovu.co.il/api/v1/dev-journal/ai/project-context
 ```
 
-This returns:
-- **Latest session details** (title, summary, duration)
-- **instructions_for_next**: What to do in this session
-- **next_session_number**: The ID for the new session
+This ONE endpoint returns EVERYTHING you need:
+- ✅ **Current session number**
+- ✅ **Latest session summary**
+- ✅ **Instructions for next session** (what to do)
+- ✅ **Complete architecture** (3 servers, IPs, ports)
+- ✅ **Tech stack** (FastAPI, React, PostgreSQL versions)
+- ✅ **Coding standards** (naming conventions, patterns)
+- ✅ **Current features** (what already exists)
+- ✅ **Database tables** (all 13 tables)
+- ✅ **Deployment procedures**
 
-### 2. **Read Instructions**
-Parse the `instructions_for_next` field from the latest session to understand:
-- What features to add
-- What bugs to fix
-- What improvements to make
+### **MANDATORY STEP 2: Present Summary to User**
+Format the response as a clear summary showing:
+1. Current session number (#2, #3, etc.)
+2. Previous session title + duration
+3. Tasks for this session (from instructions_for_next)
+4. Architecture overview
+5. Tech stack summary
+6. Current features
 
-### 3. **Get Project Context** (Optional)
+### **STEP 3: Optional - Get Historical Context**
 ```bash
 curl -s https://ulm-rct.ovu.co.il/api/v1/dev-journal/ai/sessions-summary?limit=5
 ```
 
-This shows the last 5 sessions to understand recent project evolution.
+Use this only if you need to understand the evolution across multiple sessions.
 
 ---
 

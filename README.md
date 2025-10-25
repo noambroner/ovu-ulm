@@ -1,5 +1,38 @@
 # ULM - User Login Manager
 
+---
+
+## ⚠️ **לסוכני AI - קרא קודם כל דבר אחר!**
+
+### 🤖 הנחיה חובה לפני כל פיתוח:
+
+**לפני שאתה מתחיל לעבוד על כל משימה, פיצ'ר או תיקון:**
+
+1. **📚 גש לדף הנחיות וכללי פיתוח:**
+   - **בממשק:** `https://ulm-rct.ovu.co.il/dev-guidelines`
+   - **בקוד:** `frontend/react/src/components/DevelopmentGuidelines/DevelopmentGuidelines.tsx`
+
+2. **📖 קרא את ההנחיות הרלוונטיות לפעולה שלך:**
+   - 🚀 **Deployment** (Frontend ו-Backend נכון)
+   - 🗄️ **Database** (Migrations, SQLAlchemy)
+   - 🏗️ **Architecture** (API, Logging, Dev Journal)
+   - 💻 **Coding** (**Design System חובה!**, TypeScript, i18n, Git)
+   - 🔒 **Security** (Authentication, Authorization)
+
+3. **🎨 חשוב במיוחד - ערכת עיצוב:**
+   - **חובה** לשמור על CSS Variables
+   - **אסור** gradients בוהקים או צבעים קבועים
+   - **חובה** עקביות עם DevJournal, APILogs
+
+4. **📝 יומן פיתוח:**
+   - עיין ב-`/dev-journal` למידע על סשני פיתוח קודמים
+
+**הדף מכיל 16 הנחיות מפורטות עם דוגמאות קוד ו-Best Practices.**
+
+**⚠️ זה לא אופציונלי - זה חלק חובה מתהליך הפיתוח!**
+
+---
+
 ## 📋 תיאור
 מיקרו-שירות לניהול משתמשים, אימות והרשאות במערכת OVU.
 

@@ -353,6 +353,66 @@ Nginx מגיש קבצים מתיקיית public/ ולא מהתיקייה הרא�
       ]
     },
     {
+      id: 'design-system',
+      category: 'coding',
+      title: 'שמירה על ערכת העיצוב (Design System)',
+      importance: 'critical',
+      content: `חובה לשמור על ערכת העיצוב האחידה של המערכת!
+
+**CSS Variables (מוגדרות ב-App.css):**
+- \`--bg-color\`: רקע עמוד (light: #f8fafc, dark: #1a1a2e)
+- \`--surface-color\` / \`--card-background\`: רקע כרטיסים (light: #ffffff, dark: #16213e)
+- \`--text-color\` / \`--text-primary\`: צבע טקסט ראשי
+- \`--text-secondary\`: צבע טקסט משני
+- \`--border-color\`: צבע גבולות
+- \`--primary-color\` / \`--primary-blue\`: #3b82f6 או #2563eb (כחול)
+- \`--hover-bg\`: רקע ב-hover
+
+**חוקים:**
+1. ✅ השתמש ב-CSS Variables בלבד - **לעולם לא** צבעים קבועים
+2. ✅ כרטיסים: \`border: 2px solid var(--border-color)\`
+3. ✅ רקע: \`background: var(--background-color)\`
+4. ✅ כפתורים: כחול #2563eb בלבד
+5. ❌ **אסור** gradient בוהק ברקע
+6. ❌ **אסור** צבעים שלא מהפלטה
+7. ❌ **אסור** white/black קבועים
+
+⚠️ **חמור:** קומפוננטה שלא שומרת על ערכת העיצוב פוגעת בעקביות המערכת!`,
+      examples: [
+        '/* ✅ CORRECT - שימוש ב-CSS Variables */',
+        '.my-component {',
+        '  background: var(--card-background);',
+        '  color: var(--text-primary);',
+        '  border: 2px solid var(--border-color);',
+        '}',
+        '',
+        '/* ✅ CORRECT - הגדרת variables לפי theme */',
+        '.my-component.dark {',
+        '  --background-color: #1a1a2e;',
+        '  --card-background: #16213e;',
+        '  --text-primary: #eee;',
+        '  --border-color: #0f3460;',
+        '}',
+        '',
+        '.my-component.light {',
+        '  --background-color: #f5f7fa;',
+        '  --card-background: #ffffff;',
+        '  --text-primary: #2c3e50;',
+        '  --border-color: #e1e8ed;',
+        '}',
+        '',
+        '/* ❌ WRONG - צבעים קבועים וgradient */',
+        '.my-component {',
+        '  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);',
+        '  color: white;',
+        '}',
+        '',
+        '/* בדוק דפים קיימים כדוגמה: */',
+        '// frontend/react/src/components/DevJournal/DevJournal.css',
+        '// frontend/react/src/components/APILogs/APILogs.css'
+      ]
+    },
+    {
       id: 'git-workflow',
       category: 'coding',
       title: 'Git Workflow',

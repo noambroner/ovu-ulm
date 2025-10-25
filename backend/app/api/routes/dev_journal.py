@@ -419,3 +419,102 @@ async def update_system_state(
         await db.rollback()
         raise HTTPException(status_code=500, detail=f"Failed to update system state: {str(e)}")
 
+
+# AI Helper Endpoints
+@router.get(
+    "/ai/latest-session",
+    summary="Get latest session with instructions for next session (for AI)",
+    description="Returns the most recent session with instructions_for_next field. Used by AI to know what to do in the new session."
+)
+async def get_latest_session_for_ai(
+    db: AsyncSession = Depends(get_db)
+) -> Dict[str, Any]:
+    """Get latest session for AI to read instructions"""
+    try:
+        result = await db.execute(
+            select(DevelopmentSession)
+            .order_by(desc(DevelopmentSession.id))
+            .limit(1)
+        )
+        latest_session = result.scalar_one_or_none()
+        
+        if not latest_session:
+            return {
+                "success": True,
+                "has_previous_session": False,
+                "message": "No previous sessions found. This is the first session.",
+                "next_session_number": 1
+            }
+        
+        # Calculate duration
+        duration = None
+        if latest_session.end_time and latest_session.start_time:
+            duration = int((latest_session.end_time - latest_session.start_time).total_seconds() / 60)
+        
+        return {
+            "success": True,
+            "has_previous_session": True,
+            "latest_session": {
+                "id": latest_session.id,
+                "title": latest_session.title,
+                "summary": latest_session.summary,
+                "start_time": latest_session.start_time.isoformat() if latest_session.start_time else None,
+                "end_time": latest_session.end_time.isoformat() if latest_session.end_time else None,
+                "duration_minutes": duration,
+                "instructions_for_next": latest_session.instructions_for_next
+            },
+            "next_session_number": latest_session.id + 1,
+            "message": f"Latest session: #{latest_session.id}. Next session will be #{latest_session.id + 1}"
+        }
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch latest session: {str(e)}")
+
+
+@router.get(
+    "/ai/sessions-summary",
+    summary="Get summary of all sessions (for AI context)",
+    description="Returns a brief summary of all development sessions. Useful for AI to understand project history."
+)
+async def get_sessions_summary_for_ai(
+    limit: int = Query(10, ge=1, le=50),
+    db: AsyncSession = Depends(get_db)
+) -> Dict[str, Any]:
+    """Get summary of all sessions for AI"""
+    try:
+        # Get total count
+        count_result = await db.execute(select(func.count()).select_from(DevelopmentSession))
+        total = count_result.scalar()
+        
+        # Get recent sessions
+        result = await db.execute(
+            select(DevelopmentSession)
+            .order_by(desc(DevelopmentSession.id))
+            .limit(limit)
+        )
+        sessions = result.scalars().all()
+        
+        sessions_summary = []
+        for session in sessions:
+            duration = None
+            if session.end_time and session.start_time:
+                duration = int((session.end_time - session.start_time).total_seconds() / 60)
+            
+            sessions_summary.append({
+                "id": session.id,
+                "title": session.title,
+                "summary": session.summary[:200] + "..." if session.summary and len(session.summary) > 200 else session.summary,
+                "duration_minutes": duration,
+                "start_time": session.start_time.isoformat() if session.start_time else None
+            })
+        
+        return {
+            "success": True,
+            "total_sessions": total,
+            "sessions_returned": len(sessions_summary),
+            "sessions": sessions_summary
+        }
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch sessions summary: {str(e)}")
+

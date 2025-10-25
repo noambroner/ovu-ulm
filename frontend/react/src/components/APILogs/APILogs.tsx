@@ -11,6 +11,9 @@ interface LogEntry {
   user_id?: number;
   username?: string;
   user_ip?: string;
+  origin?: string;
+  referer?: string;
+  app_source?: string;
   status_code?: number;
   request_body?: string;
   response_body?: string;
@@ -52,6 +55,8 @@ export const APILogs = ({ language, theme, logType }: APILogsProps) => {
       method: 'Method',
       endpoint: 'Endpoint',
       user: 'משתמש',
+      sourceIP: 'מקור (IP)',
+      sourceDomain: 'מקור (דומיין)',
       status: 'Status',
       duration: 'זמן (ms)',
       timestamp: 'זמן',
@@ -63,6 +68,10 @@ export const APILogs = ({ language, theme, logType }: APILogsProps) => {
       requestBody: 'Request Body',
       responseBody: 'Response Body',
       errorMessage: 'הודעת שגיאה',
+      ipAddress: 'כתובת IP',
+      origin: 'Origin (דומיין)',
+      referer: 'Referer (URL מקור)',
+      appSource: 'אפליקציה',
       close: 'סגור',
       page: 'עמוד',
       of: 'מתוך',
@@ -79,6 +88,8 @@ export const APILogs = ({ language, theme, logType }: APILogsProps) => {
       method: 'Method',
       endpoint: 'Endpoint',
       user: 'User',
+      sourceIP: 'Source (IP)',
+      sourceDomain: 'Source (Domain)',
       status: 'Status',
       duration: 'Duration (ms)',
       timestamp: 'Timestamp',
@@ -90,6 +101,10 @@ export const APILogs = ({ language, theme, logType }: APILogsProps) => {
       requestBody: 'Request Body',
       responseBody: 'Response Body',
       errorMessage: 'Error Message',
+      ipAddress: 'IP Address',
+      origin: 'Origin (Domain)',
+      referer: 'Referer (Source URL)',
+      appSource: 'Application',
       close: 'Close',
       page: 'Page',
       of: 'of',
@@ -106,6 +121,8 @@ export const APILogs = ({ language, theme, logType }: APILogsProps) => {
       method: 'Method',
       endpoint: 'Endpoint',
       user: 'مستخدم',
+      sourceIP: 'المصدر (IP)',
+      sourceDomain: 'المصدر (النطاق)',
       status: 'الحالة',
       duration: 'المدة (ms)',
       timestamp: 'الوقت',
@@ -117,6 +134,10 @@ export const APILogs = ({ language, theme, logType }: APILogsProps) => {
       requestBody: 'Request Body',
       responseBody: 'Response Body',
       errorMessage: 'رسالة خطأ',
+      ipAddress: 'عنوان IP',
+      origin: 'Origin (النطاق)',
+      referer: 'Referer (عنوان URL المصدر)',
+      appSource: 'التطبيق',
       close: 'إغلاق',
       page: 'صفحة',
       of: 'من',
@@ -253,6 +274,8 @@ export const APILogs = ({ language, theme, logType }: APILogsProps) => {
                   <th>{t[language].method}</th>
                   <th>{t[language].endpoint}</th>
                   <th>{t[language].user}</th>
+                  <th>{t[language].sourceIP}</th>
+                  <th>{t[language].sourceDomain}</th>
                   <th>{t[language].status}</th>
                   <th>{t[language].duration}</th>
                   <th>{t[language].timestamp}</th>
@@ -272,6 +295,16 @@ export const APILogs = ({ language, theme, logType }: APILogsProps) => {
                     </td>
                     <td className="endpoint-cell">{log.endpoint || log.path || log.url}</td>
                     <td>{log.username || log.user_id || '-'}</td>
+                    <td className="source-ip-cell">{log.user_ip || '-'}</td>
+                    <td className="source-domain-cell" title={log.origin || '-'}>
+                      {log.origin ? (() => {
+                        try {
+                          return new URL(log.origin).hostname;
+                        } catch {
+                          return log.origin;
+                        }
+                      })() : '-'}
+                    </td>
                     <td>
                       <span
                         className="status-badge"
@@ -344,6 +377,25 @@ export const APILogs = ({ language, theme, logType }: APILogsProps) => {
               <div className="modal-section">
                 <strong>{t[language].user}:</strong> {selectedLog.username || selectedLog.user_id || 'N/A'}
               </div>
+              <div className="modal-section">
+                <strong>{t[language].ipAddress}:</strong> {selectedLog.user_ip || 'N/A'}
+              </div>
+              {selectedLog.origin && (
+                <div className="modal-section">
+                  <strong>{t[language].origin}:</strong> {selectedLog.origin}
+                </div>
+              )}
+              {selectedLog.referer && (
+                <div className="modal-section">
+                  <strong>{t[language].referer}:</strong>{' '}
+                  <span className="referer-link">{selectedLog.referer}</span>
+                </div>
+              )}
+              {selectedLog.app_source && (
+                <div className="modal-section">
+                  <strong>{t[language].appSource}:</strong> {selectedLog.app_source}
+                </div>
+              )}
               <div className="modal-section">
                 <strong>{t[language].status}:</strong>{' '}
                 <span style={{ color: getStatusColor(selectedLog.status_code) }}>

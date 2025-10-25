@@ -27,6 +27,11 @@ class APILoggerMiddleware(BaseHTTPMiddleware):
         user_ip = request.client.host if request.client else None
         user_agent = request.headers.get("user-agent")
         
+        # Extract source information
+        origin = request.headers.get("origin")
+        referer = request.headers.get("referer")
+        app_source = request.headers.get("x-app-source", "unknown")
+        
         # Extract user info from state (set by auth middleware)
         user_id = None
         username = None
@@ -77,6 +82,9 @@ class APILoggerMiddleware(BaseHTTPMiddleware):
                 username=username,
                 user_ip=user_ip,
                 user_agent=user_agent,
+                origin=origin,
+                referer=referer,
+                app_source=app_source,
                 status_code=status_code,
                 response_headers=response_headers_str,
                 request_time=request_time,

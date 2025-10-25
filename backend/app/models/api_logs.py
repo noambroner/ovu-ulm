@@ -27,6 +27,11 @@ class APILogBackend(Base):
     user_ip = Column(String(50))
     user_agent = Column(Text)
     
+    # Request Source Information
+    origin = Column(String(255))  # Domain that made the request (e.g., https://ulm-rct.ovu.co.il)
+    referer = Column(Text)  # Full URL that made the request
+    app_source = Column(String(100), index=True)  # Application identifier (e.g., ulm-react-web, ulm-flutter-mobile)
+    
     # Response Information
     status_code = Column(Integer, index=True)
     response_body = Column(Text)
@@ -64,6 +69,11 @@ class APILogFrontend(Base):
     user_id = Column(Integer, nullable=True, index=True)
     username = Column(String(100))
     session_id = Column(String(100))
+    
+    # Request Source Information
+    origin = Column(String(255))  # Domain that made the request
+    referer = Column(Text)  # Full URL that made the request
+    app_source = Column(String(100), index=True)  # Application identifier
     
     # Response Information
     status_code = Column(Integer, index=True)

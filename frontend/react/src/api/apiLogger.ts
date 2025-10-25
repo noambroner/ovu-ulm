@@ -13,6 +13,9 @@ interface APILogEntry {
   user_id?: number;
   username?: string;
   session_id?: string;
+  origin?: string;
+  referer?: string;
+  app_source?: string;
   status_code?: number;
   response_body?: string;
   response_headers?: string;
@@ -78,6 +81,9 @@ class APILogger {
         user_id: userInfo.userId,
         username: userInfo.username,
         session_id: this.getSessionId(),
+        origin: window.location.origin,  // e.g., https://ulm-rct.ovu.co.il
+        referer: window.location.href,   // Full URL of the page making the request
+        app_source: 'ulm-react-web',     // Application identifier
         status_code: statusCode,
         response_body: responseData ? this.safeStringify(responseData, 500) : undefined,
         response_headers: responseHeaders ? this.safeStringify(responseHeaders) : undefined,

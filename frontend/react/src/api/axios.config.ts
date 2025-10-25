@@ -10,6 +10,7 @@ const api = axios.create({
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
+    'X-App-Source': 'ulm-react-web',  // Identifies this as the React web application
   },
 });
 

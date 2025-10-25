@@ -1,0 +1,116 @@
+# ULM Project - Cursor Rules for AI Assistant
+
+## 🤖 Development Journal Integration
+
+### At START of Every Session:
+
+1. **Check Previous Session**
+```bash
+curl -s https://ulm-rct.ovu.co.il/api/v1/dev-journal/ai/latest-session
+```
+
+2. **Read the Response** to get:
+   - `instructions_for_next`: What needs to be done
+   - `next_session_number`: The new session ID
+   - `latest_session.summary`: Context from last session
+
+3. **Inform User** about:
+   - Previous session summary
+   - Current session number
+   - Tasks from instructions_for_next
+
+### During Session:
+
+- Track each major step as you work
+- Document: user_prompt, ai_understanding, ai_actions, result
+
+### At END of Session:
+
+1. Create comprehensive session summary
+2. Document all steps in database
+3. Record system state (before/after)
+4. Write SESSION_{N}_SUMMARY.md file
+5. Commit everything to GitHub
+
+---
+
+## 📋 Project Standards
+
+### Code Style
+- **Backend**: Python with FastAPI, async/await patterns
+- **Frontend**: React with TypeScript, functional components with hooks
+- **Database**: PostgreSQL with SQLAlchemy ORM
+- **API**: RESTful with comprehensive OpenAPI documentation
+
+### Naming Conventions
+- **Files**: snake_case for Python, PascalCase for React components
+- **Functions**: snake_case in Python, camelCase in TypeScript
+- **Database**: snake_case for tables and columns
+
+### Documentation
+- Add docstrings to all functions
+- Include type hints in Python
+- Add JSDoc comments for complex TypeScript functions
+- Update API documentation when adding endpoints
+
+---
+
+## 🗄️ Database
+
+**Current Tables (13):**
+1. users
+2. roles  
+3. refresh_tokens
+4. password_resets
+5. token_settings
+6. scheduled_user_actions
+7. sessions
+8. api_logs_backend
+9. api_logs_frontend
+10. development_sessions
+11. development_steps
+12. system_states
+13. (dynamic access via DB Viewer)
+
+---
+
+## 🎯 Git Workflow
+
+1. **Commit often** with descriptive messages
+2. **Push to main** after testing
+3. **Deploy manually** to production server
+4. **Tag releases** when appropriate
+
+---
+
+## 📦 Deployment
+
+**Production Server**: 64.176.171.223 (via SSH key)
+- Backend: Port 8001 (uvicorn)
+- Frontend: Nginx serving static files
+- Database: PostgreSQL
+
+**Deployment Steps:**
+1. Build frontend: `npm run build`
+2. Upload frontend: `scp dist/* to server`
+3. Upload backend: `scp *.py to server`
+4. Restart: `pkill uvicorn && start uvicorn`
+
+---
+
+## 🌐 Multi-language Support
+
+- **Hebrew** (primary)
+- **English**
+- **Arabic**
+
+All UI components must support RTL and LTR.
+
+---
+
+## Reference Files
+
+- **AI Guide**: `AI_SESSION_GUIDE.md`
+- **Session Example**: `SESSION_1_SUMMARY.md`
+- **API Docs**: `/api/v1/docs` (Swagger UI)
+

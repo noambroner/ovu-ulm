@@ -4,32 +4,30 @@
 
 ## ⚠️ **לסוכני AI - קרא קודם כל דבר אחר!**
 
-### 🤖 הנחיה חובה לפני כל פיתוח:
+### 🤖 אם אתה סוכן AI חדש - עצור כאן!
 
-**לפני שאתה מתחיל לעבוד על כל משימה, פיצ'ר או תיקון:**
+**גש לדף הנחיות וכללי פיתוח וקרא אותו במלואו:**
 
-1. **📚 גש לדף הנחיות וכללי פיתוח:**
-   - **בממשק:** `https://ulm-rct.ovu.co.il/dev-guidelines`
-   - **בקוד:** `frontend/react/src/components/DevelopmentGuidelines/DevelopmentGuidelines.tsx`
+📚 **https://ulm-rct.ovu.co.il/dev-guidelines**
 
-2. **📖 קרא את ההנחיות הרלוונטיות לפעולה שלך:**
-   - 🚀 **Deployment** (Frontend ו-Backend נכון)
-   - 🗄️ **Database** (Migrations, SQLAlchemy)
-   - 🏗️ **Architecture** (API, Logging, Dev Journal)
-   - 💻 **Coding** (**Design System חובה!**, TypeScript, i18n, Git)
-   - 🔒 **Security** (Authentication, Authorization)
+**הדף מכיל:**
+- ✅ **17 הנחיות מפורטות** עם דוגמאות קוד
+- ✅ **הנחיה מיוחדת לאתחול סוכן חדש** (הנחיה #17 - קריטית!)
+- ✅ **API endpoints** לשליפת הקשר ויומן פיתוח
+- ✅ **הנחיות לתיעוד סיום סשן** (חובה!)
 
-3. **🎨 חשוב במיוחד - ערכת עיצוב:**
-   - **חובה** לשמור על CSS Variables
-   - **אסור** gradients בוהקים או צבעים קבועים
-   - **חובה** עקביות עם DevJournal, APILogs
+**קטגוריות:**
+- 🚀 Deployment (3 הנחיות)
+- 🗄️ Database (2 הנחיות)
+- 🏗️ Architecture (4 הנחיות - כולל AI Onboarding)
+- 💻 Coding (6 הנחיות - כולל Design System קריטי)
+- 🔒 Security (1 הנחיה)
+- 🧪 Testing (1 הנחיה)
 
-4. **📝 יומן פיתוח:**
-   - עיין ב-`/dev-journal` למידע על סשני פיתוח קודמים
+**אם אתה לא יכול לגשת לאתר - קרא את הקובץ:**
+`frontend/react/src/components/DevelopmentGuidelines/DevelopmentGuidelines.tsx`
 
-**הדף מכיל 16 הנחיות מפורטות עם דוגמאות קוד ו-Best Practices.**
-
-**⚠️ זה לא אופציונלי - זה חלק חובה מתהליך הפיתוח!**
+**⚠️ זה לא אופציונלי - זה תהליך חובה לפני כל עבודה!**
 
 ---
 

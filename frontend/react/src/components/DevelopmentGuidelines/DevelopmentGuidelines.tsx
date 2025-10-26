@@ -517,6 +517,80 @@ Nginx מגיש קבצים מתיקיית public/ ולא מהתיקייה הרא�
         '  setError(error.response?.data?.detail || "Failed to fetch");',
         '}'
       ]
+    },
+    {
+      id: 'ai-onboarding',
+      category: 'architecture',
+      title: '🤖 אתחול סוכן AI חדש (AI Onboarding)',
+      importance: 'critical',
+      content: `אם אתה סוכן AI חדש שמתחיל לעבוד על הפרויקט, **עצור עכשיו וקרא את זה!**
+
+**תהליך חובה לפני כל עבודה:**
+
+**1. Cursor כבר קרא אוטומטית:**
+   - קובץ \`.cursorrules\` (בשורש הפרויקט)
+   
+**2. קרא את הקובץ הזה במלואו:**
+   - frontend/react/src/components/DevelopmentGuidelines/DevelopmentGuidelines.tsx
+   - כל 17 ההנחיות עם הדוגמאות
+   
+**3. שלוף הקשר פרויקט מה-API:**
+   - GET http://64.176.171.223:8001/api/v1/dev-journal/ai/project-context
+   - יחזיר: ארכיטקטורה, tech stack, features, הנחיות
+   
+**4. קרא את הסשן האחרון מיומן הפיתוח:**
+   - GET http://64.176.171.223:8001/api/v1/dev-journal/ai/latest-session
+   - יחזיר: מה היה בסשן הקודם, הנחיות לסשן הבא, מספר סשן הבא
+   
+**5. הצג למשתמש:**
+   - ✅ אישור שקראת את כל ההנחיות
+   - 📊 כמה sessions יש, מה היה בסשן האחרון
+   - 🎯 מספר הסשן הבא (#3, #4, וכו')
+   - ⚠️ ההנחיות הקריטיות: Design System, Deployment, API Response
+   
+**6. רק אז שאל:** "מה המשימה לסשן הזה?"
+
+---
+
+**📝 חובה בסיום כל סשן:**
+
+**1. יצירת Session:**
+   - Python script ישירות ב-DB (ssh לשרת Backend)
+   - INSERT INTO development_sessions
+   
+**2. תיעוד כל הצעדים:**
+   - **כל prompt של המשתמש = צעד נפרד!**
+   - INSERT INTO development_steps (session_id, step_number, user_prompt, ai_understanding, ai_actions, result)
+   
+**3. תיעוד מצב מערכת:**
+   - state_at_start: מה היה בתחילת הסשן (קבצים, commits, features)
+   - state_at_end: מה יש בסוף הסשן (קבצים חדשים/מעודכנים, commits)
+   - changes_summary: סיכום כל השינויים
+   - INSERT INTO system_states
+
+⚠️ **אם תדלג על התיעוד - הסשן לא יחשב מושלם!**`,
+      examples: [
+        '# שלב 1: שליפת הקשר',
+        'curl http://64.176.171.223:8001/api/v1/dev-journal/ai/project-context',
+        '',
+        '# שלב 2: סשן אחרון',
+        'curl http://64.176.171.223:8001/api/v1/dev-journal/ai/latest-session',
+        '',
+        '# בסיום סשן - יצירת session:',
+        'ssh -i ~/.ssh/ovu_key ploi@64.176.171.223',
+        'cd /home/ploi/ovu-ulm/backend && source venv/bin/activate',
+        'python << EOF',
+        'import asyncio, asyncpg',
+        '# INSERT session + steps + system_states',
+        'EOF',
+        '',
+        '# דוגמה לצעד:',
+        'step_number=1',
+        'user_prompt="בוא נתחיל סשן חדש"',
+        'ai_understanding="המשתמש מבקש להתחיל סשן חדש"',
+        'ai_actions="1. קריאת יומן\\n2. הצגת סיכום"',
+        'result="הוצג סיכום והוכנה לעבודה"'
+      ]
     }
   ];
 

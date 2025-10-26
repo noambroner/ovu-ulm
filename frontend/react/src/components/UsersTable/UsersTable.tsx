@@ -413,9 +413,30 @@ export const UsersTable = ({ language, apiEndpoint, token }: UsersTableProps) =>
       {showAddModal && (
         <AddUserModal
           onClose={() => setShowAddModal(false)}
-          onAdd={async (_newUser: any) => {
-            setShowAddModal(false);
-            await fetchUsers();
+          onAdd={async (newUser: any) => {
+            try {
+              // Send POST request to create user
+              const response = await fetch(`${apiEndpoint}/api/v1/users`, {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(newUser)
+              });
+
+              if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || 'Failed to create user');
+              }
+
+              // Success - close modal and refresh list
+              setShowAddModal(false);
+              await fetchUsers();
+            } catch (error: any) {
+              // Re-throw error to be caught by AddUserModal
+              throw error;
+            }
           }}
           language={language}
         />

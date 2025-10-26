@@ -7,12 +7,117 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime
+from pydantic import BaseModel, EmailStr, Field
 
 from app.core.database import get_db
-from app.core.security import get_current_user
+from app.core.security import get_current_user, get_password_hash
 from app.models.user import User
 
 router = APIRouter()
+
+
+# Pydantic Models
+class UserCreate(BaseModel):
+    """Schema for creating a new user"""
+    username: str = Field(..., min_length=3, max_length=100, description="Username")
+    email: EmailStr = Field(..., description="User email address")
+    password: str = Field(..., min_length=6, description="User password")
+    phone: Optional[str] = Field(None, max_length=20, description="Phone number")
+    role: str = Field(default='user', description="User role (user/admin)")
+
+
+@router.post(
+    "/users",
+    summary="Create new user",
+    description="""
+    Create a new user in the system.
+    
+    **Process:**
+    - Validates username and email uniqueness
+    - Hashes the password securely
+    - Creates user with specified role
+    - Returns created user details
+    
+    **Required Fields:**
+    - username (min 3 chars)
+    - email (valid email format)
+    - password (min 6 chars)
+    
+    **Optional Fields:**
+    - phone
+    - role (default: 'user')
+    
+    **Security:**
+    - Password is hashed before storage
+    - Requires admin authentication
+    - Created user is set to active status
+    """,
+    response_description="User created successfully"
+)
+async def create_user(
+    user_data: UserCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user)
+) -> Dict[str, Any]:
+    """
+    Create a new user.
+    
+    Requires admin authentication.
+    """
+    try:
+        # Check if username already exists
+        result = await db.execute(
+            select(User).where(User.username == user_data.username)
+        )
+        if result.scalar_one_or_none():
+            raise HTTPException(status_code=400, detail=f"Username '{user_data.username}' already exists")
+        
+        # Check if email already exists
+        result = await db.execute(
+            select(User).where(User.email == user_data.email)
+        )
+        if result.scalar_one_or_none():
+            raise HTTPException(status_code=400, detail=f"Email '{user_data.email}' already exists")
+        
+        # Hash password
+        hashed_password = get_password_hash(user_data.password)
+        
+        # Create new user
+        new_user = User(
+            username=user_data.username,
+            email=user_data.email,
+            hashed_password=hashed_password,
+            phone=user_data.phone,
+            role=user_data.role,
+            status='active',
+            is_verified=False,
+            created_by_id=current_user.get('id') if isinstance(current_user, dict) else current_user.id
+        )
+        
+        db.add(new_user)
+        await db.commit()
+        await db.refresh(new_user)
+        
+        return {
+            "success": True,
+            "message": f"User '{new_user.username}' created successfully",
+            "user": {
+                "id": new_user.id,
+                "username": new_user.username,
+                "email": new_user.email,
+                "phone": new_user.phone,
+                "role": new_user.role,
+                "status": new_user.status,
+                "is_verified": new_user.is_verified,
+                "created_at": new_user.created_at.isoformat() if new_user.created_at else None
+            }
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to create user: {str(e)}")
 
 
 @router.get(

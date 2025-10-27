@@ -60,9 +60,51 @@ export const DataGrid = <T extends Record<string, any>>({
   stickyHeader = true,
   toolbarContent,
 }: DataGridProps<T>) => {
-  const [filters, setFilters] = useState<FilterState>({});
-  const [sort, setSort] = useState<SortState>({ columnId: null, direction: null });
-  const [columnWidths, setColumnWidths] = useState<ColumnWidths>({});
+  // Load initial state from localStorage using lazy initialization
+  const [filters, setFilters] = useState<FilterState>(() => {
+    if (persistStateKey) {
+      try {
+        const saved = localStorage.getItem(`datagrid_${persistStateKey}`);
+        if (saved) {
+          const { filters: savedFilters } = JSON.parse(saved);
+          return savedFilters || {};
+        }
+      } catch (e) {
+        console.error('Failed to load filters from localStorage:', e);
+      }
+    }
+    return {};
+  });
+
+  const [sort, setSort] = useState<SortState>(() => {
+    if (persistStateKey) {
+      try {
+        const saved = localStorage.getItem(`datagrid_${persistStateKey}`);
+        if (saved) {
+          const { sort: savedSort } = JSON.parse(saved);
+          return savedSort || { columnId: null, direction: null };
+        }
+      } catch (e) {
+        console.error('Failed to load sort from localStorage:', e);
+      }
+    }
+    return { columnId: null, direction: null };
+  });
+
+  const [columnWidths, setColumnWidths] = useState<ColumnWidths>(() => {
+    if (persistStateKey) {
+      try {
+        const saved = localStorage.getItem(`datagrid_${persistStateKey}`);
+        if (saved) {
+          const { columnWidths: savedWidths } = JSON.parse(saved);
+          return savedWidths || {};
+        }
+      } catch (e) {
+        console.error('Failed to load columnWidths from localStorage:', e);
+      }
+    }
+    return {};
+  });
   const [resizing, setResizing] = useState<{ columnId: string; startX: number; startWidth: number } | null>(null);
   const tableRef = useRef<HTMLTableElement>(null);
 
@@ -88,23 +130,6 @@ export const DataGrid = <T extends Record<string, any>>({
   };
 
   const t = translations[language];
-
-  // Load state from localStorage on mount
-  useEffect(() => {
-    if (persistStateKey) {
-      const saved = localStorage.getItem(`datagrid_${persistStateKey}`);
-      if (saved) {
-        try {
-          const { filters: savedFilters, sort: savedSort, columnWidths: savedWidths } = JSON.parse(saved);
-          setFilters(savedFilters || {});
-          setSort(savedSort || { columnId: null, direction: null });
-          setColumnWidths(savedWidths || {});
-        } catch (e) {
-          console.error('Failed to load DataGrid state:', e);
-        }
-      }
-    }
-  }, [persistStateKey]);
 
   // Save state to localStorage when it changes
   useEffect(() => {

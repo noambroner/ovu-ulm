@@ -145,6 +145,8 @@ async def get_backend_logs(
                 "origin": log.origin,
                 "referer": log.referer,
                 "app_source": log.app_source,
+                "request_type": log.request_type,
+                "direction": log.direction,
                 "status_code": log.status_code,
                 "response_body": log.response_body[:500] if log.response_body else None,  # Limit body size
                 "request_time": log.request_time.isoformat() if log.request_time else None,
@@ -261,6 +263,8 @@ async def get_frontend_logs(
                 "origin": log.origin,
                 "referer": log.referer,
                 "app_source": log.app_source,
+                "request_type": log.request_type,
+                "direction": log.direction,
                 "status_code": log.status_code,
                 "response_body": log.response_body[:500] if log.response_body else None,
                 "success": log.success,

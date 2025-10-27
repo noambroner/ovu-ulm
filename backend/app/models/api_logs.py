@@ -32,6 +32,10 @@ class APILogBackend(Base):
     referer = Column(Text)  # Full URL that made the request
     app_source = Column(String(100), index=True)  # Application identifier (e.g., ulm-react-web, ulm-flutter-mobile)
     
+    # Request Classification
+    request_type = Column(String(20), default='ui', index=True)  # 'ui' (from frontend UI) or 'integration' (external/third-party)
+    direction = Column(String(20), default='inbound', index=True)  # 'inbound' (incoming to server) or 'outbound' (outgoing from server)
+    
     # Response Information
     status_code = Column(Integer, index=True)
     response_body = Column(Text)
@@ -74,6 +78,10 @@ class APILogFrontend(Base):
     origin = Column(String(255))  # Domain that made the request
     referer = Column(Text)  # Full URL that made the request
     app_source = Column(String(100), index=True)  # Application identifier
+    
+    # Request Classification
+    request_type = Column(String(20), default='ui', index=True)  # 'ui' (from frontend UI) or 'integration' (external/third-party)
+    direction = Column(String(20), default='outbound', index=True)  # 'outbound' (frontend to backend) or 'inbound' (response received)
     
     # Response Information
     status_code = Column(Integer, index=True)

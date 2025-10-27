@@ -14,6 +14,8 @@ interface LogEntry {
   origin?: string;
   referer?: string;
   app_source?: string;
+  request_type?: string;
+  direction?: string;
   status_code?: number;
   request_body?: string;
   response_body?: string;
@@ -57,6 +59,12 @@ export const APILogs = ({ language, theme, logType }: APILogsProps) => {
       user: 'משתמש',
       sourceIP: 'מקור (IP)',
       sourceDomain: 'מקור (דומיין)',
+      requestType: 'סוג הבקשה',
+      requestTypeUI: 'קריאות UI',
+      requestTypeIntegration: 'קריאות אינטגרציה',
+      direction: 'כיוון',
+      directionInbound: 'נכנס',
+      directionOutbound: 'יוצא',
       status: 'Status',
       duration: 'זמן (ms)',
       timestamp: 'זמן',
@@ -90,6 +98,12 @@ export const APILogs = ({ language, theme, logType }: APILogsProps) => {
       user: 'User',
       sourceIP: 'Source (IP)',
       sourceDomain: 'Source (Domain)',
+      requestType: 'Request Type',
+      requestTypeUI: 'UI Calls',
+      requestTypeIntegration: 'Integration Calls',
+      direction: 'Direction',
+      directionInbound: 'Inbound',
+      directionOutbound: 'Outbound',
       status: 'Status',
       duration: 'Duration (ms)',
       timestamp: 'Timestamp',
@@ -123,6 +137,12 @@ export const APILogs = ({ language, theme, logType }: APILogsProps) => {
       user: 'مستخدم',
       sourceIP: 'المصدر (IP)',
       sourceDomain: 'المصدر (النطاق)',
+      requestType: 'نوع الطلب',
+      requestTypeUI: 'مكالمات UI',
+      requestTypeIntegration: 'مكالمات التكامل',
+      direction: 'الاتجاه',
+      directionInbound: 'وارد',
+      directionOutbound: 'صادر',
       status: 'الحالة',
       duration: 'المدة (ms)',
       timestamp: 'الوقت',
@@ -274,8 +294,8 @@ export const APILogs = ({ language, theme, logType }: APILogsProps) => {
                   <th>{t[language].method}</th>
                   <th>{t[language].endpoint}</th>
                   <th>{t[language].user}</th>
-                  <th>{t[language].sourceIP}</th>
-                  <th>{t[language].sourceDomain}</th>
+                  <th>{t[language].requestType}</th>
+                  <th>{t[language].direction}</th>
                   <th>{t[language].status}</th>
                   <th>{t[language].duration}</th>
                   <th>{t[language].timestamp}</th>
@@ -295,15 +315,15 @@ export const APILogs = ({ language, theme, logType }: APILogsProps) => {
                     </td>
                     <td className="endpoint-cell">{log.endpoint || log.path || log.url}</td>
                     <td>{log.username || log.user_id || '-'}</td>
-                    <td className="source-ip-cell">{log.user_ip || '-'}</td>
-                    <td className="source-domain-cell" title={log.origin || '-'}>
-                      {log.origin ? (() => {
-                        try {
-                          return new URL(log.origin).hostname;
-                        } catch {
-                          return log.origin;
-                        }
-                      })() : '-'}
+                    <td>
+                      <span className={`request-type-badge ${log.request_type === 'ui' ? 'ui' : 'integration'}`}>
+                        {log.request_type === 'ui' ? t[language].requestTypeUI : t[language].requestTypeIntegration}
+                      </span>
+                    </td>
+                    <td>
+                      <span className={`direction-badge ${log.direction === 'inbound' ? 'inbound' : 'outbound'}`}>
+                        {log.direction === 'inbound' ? t[language].directionInbound : t[language].directionOutbound}
+                      </span>
                     </td>
                     <td>
                       <span
@@ -396,6 +416,18 @@ export const APILogs = ({ language, theme, logType }: APILogsProps) => {
                   <strong>{t[language].appSource}:</strong> {selectedLog.app_source}
                 </div>
               )}
+              <div className="modal-section">
+                <strong>{t[language].requestType}:</strong>{' '}
+                <span className={`request-type-badge ${selectedLog.request_type === 'ui' ? 'ui' : 'integration'}`}>
+                  {selectedLog.request_type === 'ui' ? t[language].requestTypeUI : t[language].requestTypeIntegration}
+                </span>
+              </div>
+              <div className="modal-section">
+                <strong>{t[language].direction}:</strong>{' '}
+                <span className={`direction-badge ${selectedLog.direction === 'inbound' ? 'inbound' : 'outbound'}`}>
+                  {selectedLog.direction === 'inbound' ? t[language].directionInbound : t[language].directionOutbound}
+                </span>
+              </div>
               <div className="modal-section">
                 <strong>{t[language].status}:</strong>{' '}
                 <span style={{ color: getStatusColor(selectedLog.status_code) }}>

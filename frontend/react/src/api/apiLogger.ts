@@ -16,6 +16,8 @@ interface APILogEntry {
   origin?: string;
   referer?: string;
   app_source?: string;
+  request_type?: string;
+  direction?: string;
   status_code?: number;
   response_body?: string;
   response_headers?: string;
@@ -84,6 +86,8 @@ class APILogger {
         origin: window.location.origin,  // e.g., https://ulm-rct.ovu.co.il
         referer: window.location.href,   // Full URL of the page making the request
         app_source: 'ulm-react-web',     // Application identifier
+        request_type: 'ui',              // Frontend calls are always UI calls
+        direction: 'outbound',           // Frontend makes outbound requests to backend
         status_code: statusCode,
         response_body: responseData ? this.safeStringify(responseData, 500) : undefined,
         response_headers: responseHeaders ? this.safeStringify(responseHeaders) : undefined,

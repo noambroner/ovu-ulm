@@ -32,6 +32,14 @@ class APILoggerMiddleware(BaseHTTPMiddleware):
         referer = request.headers.get("referer")
         app_source = request.headers.get("x-app-source", "unknown")
         
+        # Determine request type: 'ui' (internal frontend) or 'integration' (external/third-party)
+        # UI requests: app_source starts with 'ulm-' (e.g., ulm-react-web, ulm-flutter-mobile)
+        # Integration requests: everything else (unknown, external apps, third-party)
+        request_type = 'ui' if app_source.startswith('ulm-') else 'integration'
+        
+        # Direction: Backend always receives 'inbound' requests
+        direction = 'inbound'
+        
         # Extract user info from state (set by auth middleware)
         user_id = None
         username = None
@@ -85,6 +93,8 @@ class APILoggerMiddleware(BaseHTTPMiddleware):
                 origin=origin,
                 referer=referer,
                 app_source=app_source,
+                request_type=request_type,
+                direction=direction,
                 status_code=status_code,
                 response_headers=response_headers_str,
                 request_time=request_time,

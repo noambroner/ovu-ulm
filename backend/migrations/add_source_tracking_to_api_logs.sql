@@ -29,3 +29,4 @@ COMMENT ON COLUMN api_logs_frontend.origin IS 'Domain that made the request';
 COMMENT ON COLUMN api_logs_frontend.referer IS 'Full URL that made the request';
 COMMENT ON COLUMN api_logs_frontend.app_source IS 'Application identifier';
 
+

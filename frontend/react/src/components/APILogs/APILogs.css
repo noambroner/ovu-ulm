@@ -356,6 +356,44 @@
   background: rgba(244, 67, 54, 0.1);
 }
 
+/* Request Type Badge */
+.request-type-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  display: inline-block;
+}
+
+.request-type-badge.ui {
+  background: #3b82f6;
+  color: white;
+}
+
+.request-type-badge.integration {
+  background: #f59e0b;
+  color: white;
+}
+
+/* Direction Badge */
+.direction-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  display: inline-block;
+}
+
+.direction-badge.inbound {
+  background: #10b981;
+  color: white;
+}
+
+.direction-badge.outbound {
+  background: #8b5cf6;
+  color: white;
+}
+
 @media (max-width: 768px) {
   .api-logs {
     padding: 1rem;

@@ -282,15 +282,17 @@ export const DataGrid = <T extends Record<string, any>>({
     <div className={`data-grid ${theme}`} dir={language === 'he' || language === 'ar' ? 'rtl' : 'ltr'}>
       {/* Toolbar - Always visible */}
       <div className="data-grid-toolbar">
-        {/* Custom toolbar content (filters, buttons, etc.) */}
-        {toolbarContent && <div className="toolbar-custom">{toolbarContent}</div>}
-        
-        {/* Clear filters button */}
-        {hasActiveFilters && (
-          <button onClick={handleClearAll} className="clear-filters-btn">
-            🗑️ {t.clearFilters}
-          </button>
-        )}
+        <div className="toolbar-custom">
+          {/* Custom toolbar content (filters, buttons, etc.) */}
+          {toolbarContent}
+          
+          {/* Clear filters button */}
+          {hasActiveFilters && (
+            <button onClick={handleClearAll} className="clear-filters-btn">
+              🗑️ {t.clearFilters}
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Table */}

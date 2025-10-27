@@ -314,28 +314,42 @@
 
 /* Clear filters button (specific) */
 .clear-filters-btn {
-  background: var(--dg-button-bg);
-  color: var(--dg-button-text);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  height: 1.875rem;
+  padding: 0 0.875rem;
   border: 1px solid var(--dg-border);
-  padding: 0.375rem 0.625rem;
-  border-radius: 4px;
+  border-radius: 5px;
+  background: #ef4444;
+  color: white;
   font-size: 0.8125rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.25rem;
   white-space: nowrap;
-  height: 1.75rem;
-  line-height: 1;
+  margin-left: auto;
+}
+
+[dir="ltr"] .clear-filters-btn {
+  margin-left: auto;
+  margin-right: 0;
+}
+
+[dir="rtl"] .clear-filters-btn {
+  margin-right: auto;
+  margin-left: 0;
 }
 
 .clear-filters-btn:hover {
-  background: var(--dg-button-hover-bg);
-  color: var(--dg-button-hover-text);
-  border-color: var(--dg-button-hover-bg);
+  background: #dc2626;
+  border-color: #dc2626;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+}
+
+.clear-filters-btn:active {
+  transform: translateY(0);
 }
 
 /* ==========================================

@@ -62,6 +62,7 @@ export const APILogs = ({ language, theme, logType }: APILogsProps) => {
       status: 'Status',
       duration: 'זמן (ms)',
       timestamp: 'זמן',
+      timeRange: 'טווח זמן',
       lastHours: 'שעות אחרונות',
       refresh: 'רענן',
       viewDetails: 'צפה בפרטים',
@@ -93,6 +94,7 @@ export const APILogs = ({ language, theme, logType }: APILogsProps) => {
       status: 'Status',
       duration: 'Duration (ms)',
       timestamp: 'Timestamp',
+      timeRange: 'Time Range',
       lastHours: 'Last Hours',
       refresh: 'Refresh',
       viewDetails: 'View Details',
@@ -124,6 +126,7 @@ export const APILogs = ({ language, theme, logType }: APILogsProps) => {
       status: 'الحالة',
       duration: 'المدة (ms)',
       timestamp: 'الوقت',
+      timeRange: 'النطاق الزمني',
       lastHours: 'آخر ساعات',
       refresh: 'تحديث',
       viewDetails: 'عرض التفاصيل',
@@ -350,23 +353,29 @@ export const APILogs = ({ language, theme, logType }: APILogsProps) => {
 
   // Toolbar content
   const toolbarContent = (
-    <>
-      <button onClick={fetchLogs} className="refresh-btn">
-        🔄 {t[language].refresh}
+    <div className="toolbar-actions">
+      <button onClick={fetchLogs} className="toolbar-btn toolbar-btn-primary">
+        <span className="btn-icon">🔄</span>
+        <span className="btn-text">{t[language].refresh}</span>
       </button>
 
-      <select
-        value={hoursFilter}
-        onChange={(e) => setHoursFilter(Number(e.target.value))}
-        className="filter-select"
-      >
-        <option value="1">1 {t[language].lastHours}</option>
-        <option value="6">6 {t[language].lastHours}</option>
-        <option value="24">24 {t[language].lastHours}</option>
-        <option value="72">72 {t[language].lastHours}</option>
-        <option value="168">168 {t[language].lastHours}</option>
-      </select>
-    </>
+      <div className="toolbar-separator"></div>
+
+      <div className="toolbar-filter-group">
+        <label className="filter-label">{t[language].timeRange || 'טווח זמן'}:</label>
+        <select
+          value={hoursFilter}
+          onChange={(e) => setHoursFilter(Number(e.target.value))}
+          className="toolbar-select"
+        >
+          <option value="1">1 {t[language].lastHours}</option>
+          <option value="6">6 {t[language].lastHours}</option>
+          <option value="24">24 {t[language].lastHours}</option>
+          <option value="72">72 {t[language].lastHours}</option>
+          <option value="168">168 {t[language].lastHours}</option>
+        </select>
+      </div>
+    </div>
   );
 
   return (

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import './DataGrid.css';
 
 export type FilterType = 'text' | 'select' | 'number' | 'date';
@@ -14,6 +14,8 @@ export interface DataGridColumn<T = any> {
   filterOptions?: { value: string; label: string }[];
   width?: string;
   minWidth?: string;
+  maxWidth?: string;
+  resizable?: boolean;
   render?: (value: any, row: T) => React.ReactNode;
   headerRender?: () => React.ReactNode;
 }
@@ -24,11 +26,12 @@ export interface DataGridProps<T = any> {
   keyField: keyof T;
   language: 'he' | 'en' | 'ar';
   theme: 'light' | 'dark';
-  persistStateKey?: string; // Key for localStorage persistence
+  persistStateKey?: string;
   onRowClick?: (row: T) => void;
   emptyMessage?: string;
   height?: string;
   stickyHeader?: boolean;
+  toolbarContent?: React.ReactNode; // Custom toolbar content
 }
 
 interface FilterState {
@@ -38,6 +41,10 @@ interface FilterState {
 interface SortState {
   columnId: string | null;
   direction: SortDirection;
+}
+
+interface ColumnWidths {
+  [columnId: string]: number;
 }
 
 export const DataGrid = <T extends Record<string, any>>({
@@ -51,9 +58,13 @@ export const DataGrid = <T extends Record<string, any>>({
   emptyMessage,
   height = 'auto',
   stickyHeader = true,
+  toolbarContent,
 }: DataGridProps<T>) => {
   const [filters, setFilters] = useState<FilterState>({});
   const [sort, setSort] = useState<SortState>({ columnId: null, direction: null });
+  const [columnWidths, setColumnWidths] = useState<ColumnWidths>({});
+  const [resizing, setResizing] = useState<{ columnId: string; startX: number; startWidth: number } | null>(null);
+  const tableRef = useRef<HTMLTableElement>(null);
 
   const translations = {
     he: {
@@ -84,9 +95,10 @@ export const DataGrid = <T extends Record<string, any>>({
       const saved = localStorage.getItem(`datagrid_${persistStateKey}`);
       if (saved) {
         try {
-          const { filters: savedFilters, sort: savedSort } = JSON.parse(saved);
+          const { filters: savedFilters, sort: savedSort, columnWidths: savedWidths } = JSON.parse(saved);
           setFilters(savedFilters || {});
           setSort(savedSort || { columnId: null, direction: null });
+          setColumnWidths(savedWidths || {});
         } catch (e) {
           console.error('Failed to load DataGrid state:', e);
         }
@@ -99,10 +111,62 @@ export const DataGrid = <T extends Record<string, any>>({
     if (persistStateKey) {
       localStorage.setItem(
         `datagrid_${persistStateKey}`,
-        JSON.stringify({ filters, sort })
+        JSON.stringify({ filters, sort, columnWidths })
       );
     }
-  }, [filters, sort, persistStateKey]);
+  }, [filters, sort, columnWidths, persistStateKey]);
+
+  // Initialize column widths from columns prop
+  useEffect(() => {
+    const initialWidths: ColumnWidths = {};
+    columns.forEach(col => {
+      if (col.width && !columnWidths[col.id]) {
+        initialWidths[col.id] = parseInt(col.width);
+      }
+    });
+    if (Object.keys(initialWidths).length > 0) {
+      setColumnWidths(prev => ({ ...initialWidths, ...prev }));
+    }
+  }, [columns]);
+
+  // Handle column resize
+  const handleResizeStart = (columnId: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const th = tableRef.current?.querySelector(`th[data-column-id="${columnId}"]`);
+    if (th) {
+      setResizing({
+        columnId,
+        startX: e.clientX,
+        startWidth: th.getBoundingClientRect().width,
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (!resizing) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const delta = e.clientX - resizing.startX;
+      const newWidth = Math.max(50, resizing.startWidth + delta);
+      setColumnWidths(prev => ({
+        ...prev,
+        [resizing.columnId]: newWidth,
+      }));
+    };
+
+    const handleMouseUp = () => {
+      setResizing(null);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [resizing]);
 
   // Get value from row
   const getValueFromRow = (row: T, column: DataGridColumn<T>): any => {
@@ -116,7 +180,6 @@ export const DataGrid = <T extends Record<string, any>>({
   const filteredData = useMemo(() => {
     let result = [...data];
 
-    // Apply filters
     Object.entries(filters).forEach(([columnId, filterValue]) => {
       if (!filterValue) return;
 
@@ -146,12 +209,10 @@ export const DataGrid = <T extends Record<string, any>>({
       const aValue = getValueFromRow(a, column);
       const bValue = getValueFromRow(b, column);
 
-      // Handle null/undefined
       if (aValue == null && bValue == null) return 0;
       if (aValue == null) return sort.direction === 'asc' ? 1 : -1;
       if (bValue == null) return sort.direction === 'asc' ? -1 : 1;
 
-      // Compare values
       let comparison = 0;
       if (typeof aValue === 'number' && typeof bValue === 'number') {
         comparison = aValue - bValue;
@@ -196,32 +257,60 @@ export const DataGrid = <T extends Record<string, any>>({
   // Check if any filters or sorting active
   const hasActiveFilters = Object.values(filters).some(v => v) || sort.columnId !== null;
 
+  // Get column style
+  const getColumnStyle = (column: DataGridColumn<T>) => {
+    const style: React.CSSProperties = {};
+    
+    if (columnWidths[column.id]) {
+      style.width = `${columnWidths[column.id]}px`;
+    } else if (column.width) {
+      style.width = column.width;
+    }
+    
+    if (column.minWidth) {
+      style.minWidth = column.minWidth;
+    }
+    
+    if (column.maxWidth) {
+      style.maxWidth = column.maxWidth;
+    }
+
+    return style;
+  };
+
   return (
     <div className={`data-grid ${theme}`} dir={language === 'he' || language === 'ar' ? 'rtl' : 'ltr'}>
-      {/* Clear filters button */}
-      {hasActiveFilters && (
-        <div className="data-grid-toolbar">
+      {/* Toolbar - Always visible */}
+      <div className="data-grid-toolbar">
+        {/* Custom toolbar content (filters, buttons, etc.) */}
+        {toolbarContent && <div className="toolbar-custom">{toolbarContent}</div>}
+        
+        {/* Clear filters button */}
+        {hasActiveFilters && (
           <button onClick={handleClearAll} className="clear-filters-btn">
             🗑️ {t.clearFilters}
           </button>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Table */}
       <div className="data-grid-container" style={{ height }}>
-        <table className="data-grid-table">
+        <table className="data-grid-table" ref={tableRef}>
           <thead className={stickyHeader ? 'sticky-header' : ''}>
             {/* Column headers */}
             <tr>
               {columns.map(column => (
                 <th
                   key={column.id}
-                  style={{ width: column.width, minWidth: column.minWidth }}
+                  data-column-id={column.id}
+                  style={getColumnStyle(column)}
                   className={column.sortable ? 'sortable' : ''}
                   onClick={() => column.sortable && handleSort(column.id)}
                 >
                   <div className="th-content">
-                    {column.headerRender ? column.headerRender() : column.label}
+                    <span className="th-label">
+                      {column.headerRender ? column.headerRender() : column.label}
+                    </span>
                     {column.sortable && (
                       <span className="sort-indicator">
                         {sort.columnId === column.id ? (
@@ -232,6 +321,14 @@ export const DataGrid = <T extends Record<string, any>>({
                       </span>
                     )}
                   </div>
+                  {/* Resize handle */}
+                  {column.resizable !== false && (
+                    <div
+                      className="resize-handle"
+                      onMouseDown={(e) => handleResizeStart(column.id, e)}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  )}
                 </th>
               ))}
             </tr>
@@ -288,7 +385,7 @@ export const DataGrid = <T extends Record<string, any>>({
                   className={onRowClick ? 'clickable' : ''}
                 >
                   {columns.map(column => (
-                    <td key={`${row[keyField]}-${column.id}`}>
+                    <td key={`${row[keyField]}-${column.id}`} style={getColumnStyle(column)}>
                       {column.render
                         ? column.render(getValueFromRow(row, column), row)
                         : String(getValueFromRow(row, column) ?? '-')}
@@ -312,4 +409,3 @@ export const DataGrid = <T extends Record<string, any>>({
     </div>
   );
 };
-

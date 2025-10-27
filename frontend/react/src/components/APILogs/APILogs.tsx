@@ -348,6 +348,27 @@ export const APILogs = ({ language, theme, logType }: APILogsProps) => {
     }
   ], [language, t]);
 
+  // Toolbar content
+  const toolbarContent = (
+    <>
+      <select
+        value={hoursFilter}
+        onChange={(e) => setHoursFilter(Number(e.target.value))}
+        className="filter-select"
+      >
+        <option value="1">1 {t[language].lastHours}</option>
+        <option value="6">6 {t[language].lastHours}</option>
+        <option value="24">24 {t[language].lastHours}</option>
+        <option value="72">72 {t[language].lastHours}</option>
+        <option value="168">168 {t[language].lastHours}</option>
+      </select>
+
+      <button onClick={fetchLogs} className="refresh-btn">
+        🔄 {t[language].refresh}
+      </button>
+    </>
+  );
+
   return (
     <div className={`api-logs ${theme}`} dir={language === 'he' || language === 'ar' ? 'rtl' : 'ltr'}>
       <div className="logs-header">
@@ -355,26 +376,7 @@ export const APILogs = ({ language, theme, logType }: APILogsProps) => {
         <p className="logs-subtitle">{t[language].subtitle}</p>
       </div>
 
-      {/* API-level Filters */}
-      <div className="logs-filters">
-        <select
-          value={hoursFilter}
-          onChange={(e) => setHoursFilter(Number(e.target.value))}
-          className="filter-select"
-        >
-          <option value="1">1 {t[language].lastHours}</option>
-          <option value="6">6 {t[language].lastHours}</option>
-          <option value="24">24 {t[language].lastHours}</option>
-          <option value="72">72 {t[language].lastHours}</option>
-          <option value="168">168 {t[language].lastHours}</option>
-        </select>
-
-        <button onClick={fetchLogs} className="refresh-btn">
-          🔄 {t[language].refresh}
-        </button>
-      </div>
-
-      {/* DataGrid */}
+      {/* DataGrid with integrated toolbar */}
       {loading ? (
         <div className="loading-container">
           <div className="loading-spinner"></div>
@@ -397,6 +399,7 @@ export const APILogs = ({ language, theme, logType }: APILogsProps) => {
           emptyMessage={t[language].noLogs}
           height="calc(100vh - 400px)"
           stickyHeader={true}
+          toolbarContent={toolbarContent}
         />
       )}
 

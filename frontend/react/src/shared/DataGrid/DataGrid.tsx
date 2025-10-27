@@ -1,5 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import './DataGrid.css';
+import { SearchHistory } from './SearchHistory';
+import { savePreferencesHybrid, loadPreferencesHybrid, addSearchHistory } from '../../services/userPreferencesService';
 
 export type FilterType = 'text' | 'select' | 'number' | 'date';
 export type SortDirection = 'asc' | 'desc' | null;
@@ -60,51 +62,12 @@ export const DataGrid = <T extends Record<string, any>>({
   stickyHeader = true,
   toolbarContent,
 }: DataGridProps<T>) => {
-  // Load initial state from localStorage using lazy initialization
-  const [filters, setFilters] = useState<FilterState>(() => {
-    if (persistStateKey) {
-      try {
-        const saved = localStorage.getItem(`datagrid_${persistStateKey}`);
-        if (saved) {
-          const { filters: savedFilters } = JSON.parse(saved);
-          return savedFilters || {};
-        }
-      } catch (e) {
-        console.error('Failed to load filters from localStorage:', e);
-      }
-    }
-    return {};
-  });
-
-  const [sort, setSort] = useState<SortState>(() => {
-    if (persistStateKey) {
-      try {
-        const saved = localStorage.getItem(`datagrid_${persistStateKey}`);
-        if (saved) {
-          const { sort: savedSort } = JSON.parse(saved);
-          return savedSort || { columnId: null, direction: null };
-        }
-      } catch (e) {
-        console.error('Failed to load sort from localStorage:', e);
-      }
-    }
-    return { columnId: null, direction: null };
-  });
-
-  const [columnWidths, setColumnWidths] = useState<ColumnWidths>(() => {
-    if (persistStateKey) {
-      try {
-        const saved = localStorage.getItem(`datagrid_${persistStateKey}`);
-        if (saved) {
-          const { columnWidths: savedWidths } = JSON.parse(saved);
-          return savedWidths || {};
-        }
-      } catch (e) {
-        console.error('Failed to load columnWidths from localStorage:', e);
-      }
-    }
-    return {};
-  });
+  // State
+  const [filters, setFilters] = useState<FilterState>({});
+  const [sort, setSort] = useState<SortState>({ columnId: null, direction: null });
+  const [columnWidths, setColumnWidths] = useState<ColumnWidths>({});
+  const [showHistory, setShowHistory] = useState(false);
+  const [preferencesLoaded, setPreferencesLoaded] = useState(false);
   const [resizing, setResizing] = useState<{ columnId: string; startX: number; startWidth: number } | null>(null);
   const tableRef = useRef<HTMLTableElement>(null);
 
@@ -131,15 +94,40 @@ export const DataGrid = <T extends Record<string, any>>({
 
   const t = translations[language];
 
-  // Save state to localStorage when it changes
+  // Load preferences from server/localStorage on mount
   useEffect(() => {
-    if (persistStateKey) {
-      localStorage.setItem(
-        `datagrid_${persistStateKey}`,
-        JSON.stringify({ filters, sort, columnWidths })
-      );
+    const loadPreferences = async () => {
+      if (persistStateKey) {
+        try {
+          const saved = await loadPreferencesHybrid(persistStateKey);
+          if (saved) {
+            setFilters(saved.filters || {});
+            setSort(saved.sort || { columnId: null, direction: null });
+            setColumnWidths(saved.columnWidths || {});
+          }
+        } catch (e) {
+          console.error('Failed to load preferences:', e);
+        } finally {
+          setPreferencesLoaded(true);
+        }
+      } else {
+        setPreferencesLoaded(true);
+      }
+    };
+    
+    loadPreferences();
+  }, [persistStateKey]);
+
+  // Save preferences to server/localStorage when they change
+  useEffect(() => {
+    if (persistStateKey && preferencesLoaded) {
+      savePreferencesHybrid(persistStateKey, {
+        filters,
+        sort,
+        columnWidths
+      });
     }
-  }, [filters, sort, columnWidths, persistStateKey]);
+  }, [filters, sort, columnWidths, persistStateKey, preferencesLoaded]);
 
   // Initialize column widths from columns prop
   useEffect(() => {
@@ -266,17 +254,32 @@ export const DataGrid = <T extends Record<string, any>>({
   };
 
   // Handle filter change
-  const handleFilterChange = (columnId: string, value: string) => {
-    setFilters(prev => ({
-      ...prev,
+  const handleFilterChange = async (columnId: string, value: string) => {
+    const newFilters = {
+      ...filters,
       [columnId]: value,
-    }));
+    };
+    setFilters(newFilters);
+    
+    // Save to search history if there are active filters
+    if (persistStateKey && Object.values(newFilters).some(v => v)) {
+      try {
+        await addSearchHistory(persistStateKey, newFilters);
+      } catch (e) {
+        console.error('Failed to save search history:', e);
+      }
+    }
   };
 
   // Clear all filters and sorting
   const handleClearAll = () => {
     setFilters({});
     setSort({ columnId: null, direction: null });
+  };
+
+  // Apply search from history
+  const handleApplySearch = (searchFilters: Record<string, string>) => {
+    setFilters(searchFilters);
   };
 
   // Check if any filters or sorting active
@@ -310,6 +313,17 @@ export const DataGrid = <T extends Record<string, any>>({
         <div className="toolbar-actions">
           {/* Custom toolbar content (filters, buttons, etc.) */}
           {toolbarContent}
+          
+          {/* Search History button */}
+          {persistStateKey && (
+            <button 
+              onClick={() => setShowHistory(true)} 
+              className="toolbar-btn"
+              title={language === 'he' ? 'היסטוריית חיפושים' : language === 'ar' ? 'سجل البحث' : 'Search History'}
+            >
+              📋
+            </button>
+          )}
           
           {/* Clear filters button */}
           {hasActiveFilters && (
@@ -433,6 +447,17 @@ export const DataGrid = <T extends Record<string, any>>({
             : `${sortedData.length} / ${data.length} ${language === 'he' ? 'רשומות' : language === 'ar' ? 'سجلات' : 'records'}`}
         </span>
       </div>
+
+      {/* Search History Modal */}
+      {showHistory && persistStateKey && (
+        <SearchHistory
+          datagridKey={persistStateKey}
+          language={language}
+          theme={theme}
+          onApplySearch={handleApplySearch}
+          onClose={() => setShowHistory(false)}
+        />
+      )}
     </div>
   );
 };

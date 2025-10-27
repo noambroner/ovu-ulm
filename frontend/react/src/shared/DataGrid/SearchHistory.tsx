@@ -11,7 +11,8 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { getSearchHistory, deleteSearchHistory, SearchHistoryEntry } from '../../services/userPreferencesService';
+import { getSearchHistory, deleteSearchHistory } from '../../services/userPreferencesService';
+import type { SearchHistoryEntry } from '../../services/userPreferencesService';
 import './SearchHistory.css';
 
 interface SearchHistoryProps {

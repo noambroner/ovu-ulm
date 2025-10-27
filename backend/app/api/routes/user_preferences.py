@@ -10,9 +10,9 @@ from typing import List, Optional
 from pydantic import BaseModel
 from datetime import datetime
 
-from app.database import get_db
+from app.core.database import get_db
 from app.models.user_preferences import UserDataGridPreference, UserSearchHistory
-from app.auth import get_current_user
+from app.core.security import get_current_user
 
 
 router = APIRouter(prefix="/api/v1", tags=["User Preferences"])

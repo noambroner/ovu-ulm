@@ -353,7 +353,7 @@ export const APILogs = ({ language, theme, logType }: APILogsProps) => {
 
   // Toolbar content
   const toolbarContent = (
-    <div className="toolbar-actions">
+    <>
       <button onClick={fetchLogs} className="toolbar-btn toolbar-btn-primary">
         <span className="btn-icon">🔄</span>
         <span className="btn-text">{t[language].refresh}</span>
@@ -375,7 +375,7 @@ export const APILogs = ({ language, theme, logType }: APILogsProps) => {
           <option value="168">168 {t[language].lastHours}</option>
         </select>
       </div>
-    </div>
+    </>
   );
 
   return (

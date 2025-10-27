@@ -282,7 +282,7 @@ export const DataGrid = <T extends Record<string, any>>({
     <div className={`data-grid ${theme}`} dir={language === 'he' || language === 'ar' ? 'rtl' : 'ltr'}>
       {/* Toolbar - Always visible */}
       <div className="data-grid-toolbar">
-        <div className="toolbar-custom">
+        <div className="toolbar-actions">
           {/* Custom toolbar content (filters, buttons, etc.) */}
           {toolbarContent}
           

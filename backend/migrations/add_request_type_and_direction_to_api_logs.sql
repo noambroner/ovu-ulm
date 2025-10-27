@@ -70,3 +70,4 @@ SELECT direction, COUNT(*) as count
 FROM api_logs_backend
 GROUP BY direction;
 
+

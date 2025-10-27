@@ -409,3 +409,4 @@ const toolbarContent = (
 **עדכון אחרון:** 27.10.2025  
 **גרסה:** 2.0 (עם Toolbar Design System)
 
+

@@ -351,6 +351,10 @@ export const APILogs = ({ language, theme, logType }: APILogsProps) => {
   // Toolbar content
   const toolbarContent = (
     <>
+      <button onClick={fetchLogs} className="refresh-btn">
+        🔄 {t[language].refresh}
+      </button>
+
       <select
         value={hoursFilter}
         onChange={(e) => setHoursFilter(Number(e.target.value))}
@@ -362,10 +366,6 @@ export const APILogs = ({ language, theme, logType }: APILogsProps) => {
         <option value="72">72 {t[language].lastHours}</option>
         <option value="168">168 {t[language].lastHours}</option>
       </select>
-
-      <button onClick={fetchLogs} className="refresh-btn">
-        🔄 {t[language].refresh}
-      </button>
     </>
   );
 

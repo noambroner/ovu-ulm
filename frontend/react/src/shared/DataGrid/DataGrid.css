@@ -48,7 +48,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
   padding: 0.5rem 0.75rem;
   background: var(--dg-bg-secondary);
   border: 1px solid var(--dg-border);
@@ -56,37 +56,158 @@
   border-top-right-radius: 8px;
   border-bottom: none;
   flex-wrap: wrap;
-  min-height: 2.5rem;
+  min-height: 2.25rem;
 }
 
 .toolbar-custom {
   display: flex;
-  gap: 0.75rem;
+  gap: 0.5rem;
   align-items: center;
   flex: 1;
   flex-wrap: wrap;
 }
 
+/* ==========================================
+   Toolbar Elements - Unified Design
+   ========================================== */
+
+/* Base styles for all toolbar elements */
+.data-grid-toolbar input,
+.data-grid-toolbar select,
+.data-grid-toolbar button {
+  height: 1.75rem;
+  padding: 0.25rem 0.625rem;
+  border: 1px solid var(--dg-border);
+  border-radius: 4px;
+  font-size: 0.8125rem;
+  line-height: 1.2;
+  box-sizing: border-box;
+  vertical-align: middle;
+  transition: all 0.2s ease;
+}
+
+/* Input fields in toolbar */
+.data-grid-toolbar input[type="text"],
+.data-grid-toolbar input[type="search"],
+.data-grid-toolbar input[type="number"] {
+  background: var(--dg-bg-primary);
+  color: var(--dg-text-primary);
+  min-width: 120px;
+}
+
+.data-grid-toolbar input:focus {
+  outline: none;
+  border-color: var(--dg-primary);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+.data-grid-toolbar input::placeholder {
+  color: var(--dg-text-muted);
+  font-size: 0.75rem;
+}
+
+/* Select dropdowns in toolbar */
+.data-grid-toolbar select {
+  background: var(--dg-bg-primary);
+  color: var(--dg-text-primary);
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%23666' d='M5 7L1 3h8z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: left 0.5rem center;
+  padding-right: 0.625rem;
+  padding-left: 1.5rem;
+  min-width: 100px;
+}
+
+[dir="ltr"] .data-grid-toolbar select {
+  background-position: right 0.5rem center;
+  padding-right: 1.5rem;
+  padding-left: 0.625rem;
+}
+
+.data-grid-toolbar select:hover {
+  border-color: var(--dg-primary);
+}
+
+.data-grid-toolbar select:focus {
+  outline: none;
+  border-color: var(--dg-primary);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+/* Primary buttons in toolbar */
+.data-grid-toolbar button {
+  background: var(--dg-primary);
+  color: white;
+  border: 1px solid var(--dg-primary);
+  cursor: pointer;
+  font-weight: 500;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.data-grid-toolbar button:hover {
+  background: var(--dg-primary-hover);
+  border-color: var(--dg-primary-hover);
+}
+
+.data-grid-toolbar button:active {
+  transform: translateY(1px);
+}
+
+/* Secondary buttons (outline style) */
+.data-grid-toolbar button.secondary {
+  background: transparent;
+  color: var(--dg-text-primary);
+  border-color: var(--dg-border);
+}
+
+.data-grid-toolbar button.secondary:hover {
+  background: var(--dg-bg-hover);
+  border-color: var(--dg-primary);
+  color: var(--dg-primary);
+}
+
+/* Danger buttons */
+.data-grid-toolbar button.danger {
+  background: #ef4444;
+  border-color: #ef4444;
+}
+
+.data-grid-toolbar button.danger:hover {
+  background: #dc2626;
+  border-color: #dc2626;
+}
+
+/* Clear filters button (specific) */
 .clear-filters-btn {
   background: var(--dg-primary);
   color: white;
-  border: none;
-  padding: 0.375rem 0.75rem;
+  border: 1px solid var(--dg-primary);
+  padding: 0.25rem 0.625rem;
   border-radius: 4px;
   font-size: 0.8125rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 0.375rem;
+  justify-content: center;
+  gap: 0.25rem;
   white-space: nowrap;
-  height: 1.875rem;
-  line-height: 1;
+  height: 1.75rem;
+  line-height: 1.2;
 }
 
 .clear-filters-btn:hover {
   background: var(--dg-primary-hover);
+  border-color: var(--dg-primary-hover);
 }
 
 /* ==========================================
@@ -372,16 +493,28 @@
   .data-grid-toolbar {
     padding: 0.5rem;
     gap: 0.5rem;
+    min-height: 2rem;
   }
 
   .toolbar-custom {
     gap: 0.5rem;
   }
 
-  .clear-filters-btn {
-    padding: 0.375rem 0.625rem;
+  .data-grid-toolbar input,
+  .data-grid-toolbar select,
+  .data-grid-toolbar button {
+    height: 1.625rem;
     font-size: 0.75rem;
-    height: 1.75rem;
+    padding: 0.25rem 0.5rem;
+  }
+
+  .data-grid-toolbar select {
+    padding-left: 1.375rem;
+  }
+
+  [dir="ltr"] .data-grid-toolbar select {
+    padding-right: 1.375rem;
+    padding-left: 0.5rem;
   }
 
   .data-grid-table {
@@ -408,19 +541,34 @@
 
   .data-grid-toolbar {
     padding: 0.375rem 0.5rem;
-    gap: 0.5rem;
-    min-height: 2rem;
+    gap: 0.375rem;
+    min-height: 1.875rem;
   }
 
   .toolbar-custom {
-    gap: 0.5rem;
+    gap: 0.375rem;
   }
 
-  .clear-filters-btn {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.6875rem;
+  .data-grid-toolbar input,
+  .data-grid-toolbar select,
+  .data-grid-toolbar button {
     height: 1.5rem;
-    gap: 0.25rem;
+    font-size: 0.6875rem;
+    padding: 0.25rem 0.5rem;
+  }
+
+  .data-grid-toolbar select {
+    padding-left: 1.25rem;
+    min-width: 80px;
+  }
+
+  [dir="ltr"] .data-grid-toolbar select {
+    padding-right: 1.25rem;
+    padding-left: 0.5rem;
+  }
+
+  .data-grid-toolbar input {
+    min-width: 100px;
   }
 
   .data-grid-table {
@@ -473,14 +621,24 @@
     flex-direction: column;
     align-items: stretch;
     padding: 0.375rem;
+    gap: 0.375rem;
   }
 
   .toolbar-custom {
     width: 100%;
+    flex-direction: column;
   }
 
-  .clear-filters-btn {
+  .data-grid-toolbar input,
+  .data-grid-toolbar select,
+  .data-grid-toolbar button {
     width: 100%;
+    height: 1.625rem;
+    font-size: 0.6875rem;
+    min-width: auto;
+  }
+
+  .data-grid-toolbar button {
     justify-content: center;
   }
 

@@ -98,29 +98,48 @@
 
 ## 🚀 Deployment Rules (CRITICAL!)
 
-### Frontend Deployment:
+### Frontend Deployment - 4 MANDATORY STEPS:
 ```bash
 # Server: ploi@64.176.173.105
 # SSH Key: ~/.ssh/ovu_key
+# ⚠️ Nginx serves ONLY from /public/ directory!
+# ⚠️ DO NOT use rsync - ONLY use scp!
 
+# Step 1: Build locally
 cd /home/noam/projects/dev/ovu-ulm/frontend/react
 npm run build
+
+# Step 2: Upload to server (intermediate path)
 scp -i ~/.ssh/ovu_key -r dist/* ploi@64.176.173.105:/home/ploi/ulm-rct.ovu.co.il/
 
-# CRITICAL: Copy to public/ directory (Nginx serves from there!)
+# Step 3: CRITICAL - Copy to public/ (Nginx serves from here!)
 ssh -i ~/.ssh/ovu_key ploi@64.176.173.105 "cp -rf /home/ploi/ulm-rct.ovu.co.il/*.html /home/ploi/ulm-rct.ovu.co.il/public/ && cp -rf /home/ploi/ulm-rct.ovu.co.il/assets/* /home/ploi/ulm-rct.ovu.co.il/public/assets/"
+
+# Step 4: Verify files are in place
+ssh -i ~/.ssh/ovu_key ploi@64.176.173.105 "ls -lh /home/ploi/ulm-rct.ovu.co.il/public/index.html"
 ```
 
-### Backend Deployment:
+### Backend Deployment - 4 MANDATORY STEPS:
 ```bash
 # Server: ploi@64.176.171.223
 # SSH Key: ~/.ssh/ovu_key
+# ⚠️ pkill is NOT enough - MUST use kill -9 on specific PID!
 
+# Step 1: Upload files
 cd /home/noam/projects/dev/ovu-ulm/backend
 scp -i ~/.ssh/ovu_key -r app/ ploi@64.176.171.223:/home/ploi/ovu-ulm/backend/
 
-# Restart service
-ssh -i ~/.ssh/ovu_key ploi@64.176.171.223 "cd /home/ploi/ovu-ulm/backend && pkill -f 'uvicorn.*ulm' && nohup venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8001 > /dev/null 2>&1 &"
+# Step 2: Find PID of running uvicorn
+ssh -i ~/.ssh/ovu_key ploi@64.176.171.223 "lsof -i :8001 | grep -v COMMAND"
+# You'll get a PID - e.g., 1729602
+
+# Step 3: Kill the specific process (replace [PID] with actual number)
+ssh -i ~/.ssh/ovu_key ploi@64.176.171.223 "kill -9 [PID]"
+
+# Step 4: Start uvicorn + verify
+ssh -i ~/.ssh/ovu_key ploi@64.176.171.223 "cd /home/ploi/ovu-ulm/backend && nohup venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8001 > /dev/null 2>&1 &"
+sleep 3
+curl -s http://64.176.171.223:8001/api/v1/health | head -5
 ```
 
 ---

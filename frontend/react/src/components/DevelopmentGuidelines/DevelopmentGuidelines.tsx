@@ -159,19 +159,36 @@ export const DevelopmentGuidelines = ({ language, theme }: DevelopmentGuidelines
       category: 'deployment',
       title: 'Deployment של Frontend (React)',
       importance: 'critical',
-      content: `חובה להעלות קבצים לשני מיקומים!
+      content: `⚠️ **חובה לבצע בדיוק 4 שלבים - בסדר הזה!**
       
 **שרת Frontend:** ploi@64.176.173.105
 **SSH Key:** ~/.ssh/ovu_key
-**תיקיית העבודה:** /home/ploi/ulm-rct.ovu.co.il/
 **תיקיית Nginx (קריטי!):** /home/ploi/ulm-rct.ovu.co.il/public/
 
-Nginx מגיש קבצים מתיקיית public/ ולא מהתיקייה הראשית!`,
+**⚠️ Nginx מגיש רק מ-public/ ⚠️**
+
+**תהליך ה-Deployment - 4 שלבים חובה:**
+
+**שלב 1:** Build local
+**שלב 2:** העלאה לשרת (נתיב ביניים)
+**שלב 3:** העתקה ל-public/ (שם Nginx מגיש)
+**שלב 4:** וידוא שהקבצים במקום הנכון
+
+⚠️ **אסור rsync! רק scp!**
+⚠️ **אסור לדלג על שלב 3 - העתקה ל-public/**`,
       examples: [
+        '# שלב 1: Build',
         'cd /home/noam/projects/dev/ovu-ulm/frontend/react',
         'npm run build',
+        '',
+        '# שלב 2: העלאה לשרת (נתיב ביניים)',
         'scp -i ~/.ssh/ovu_key -r dist/* ploi@64.176.173.105:/home/ploi/ulm-rct.ovu.co.il/',
-        'ssh -i ~/.ssh/ovu_key ploi@64.176.173.105 "cp -rf /home/ploi/ulm-rct.ovu.co.il/*.html /home/ploi/ulm-rct.ovu.co.il/public/ && cp -rf /home/ploi/ulm-rct.ovu.co.il/assets/* /home/ploi/ulm-rct.ovu.co.il/public/assets/"'
+        '',
+        '# שלב 3: העתקה ל-public/ (קריטי!)',
+        'ssh -i ~/.ssh/ovu_key ploi@64.176.173.105 "cp -rf /home/ploi/ulm-rct.ovu.co.il/*.html /home/ploi/ulm-rct.ovu.co.il/public/ && cp -rf /home/ploi/ulm-rct.ovu.co.il/assets/* /home/ploi/ulm-rct.ovu.co.il/public/assets/"',
+        '',
+        '# שלב 4: וידוא',
+        'ssh -i ~/.ssh/ovu_key ploi@64.176.173.105 "ls -lh /home/ploi/ulm-rct.ovu.co.il/public/index.html && ls -lh /home/ploi/ulm-rct.ovu.co.il/public/assets/ | head -5"'
       ]
     },
     {
@@ -179,16 +196,39 @@ Nginx מגיש קבצים מתיקיית public/ ולא מהתיקייה הרא�
       category: 'deployment',
       title: 'Deployment של Backend (FastAPI)',
       importance: 'critical',
-      content: `העלאה נכונה של Backend והפעלה מחדש של השירות.
+      content: `⚠️ **חובה לבצע בדיוק 4 שלבים - בסדר הזה!**
 
 **שרת Backend:** ploi@64.176.171.223
 **SSH Key:** ~/.ssh/ovu_key
 **תיקיית העבודה:** /home/ploi/ovu-ulm/backend/
-**פורט:** 8001`,
+**פורט:** 8001
+
+**תהליך ה-Deployment - 4 שלבים חובה:**
+
+**שלב 1:** העלאת קבצים לשרת
+**שלב 2:** זיהוי תהליך uvicorn (lsof)
+**שלב 3:** עצירה חזקה (kill -9)
+**שלב 4:** הפעלה מחדש + וידוא
+
+⚠️ **pkill רגיל לא מספיק! חובה kill -9 לPID ספציפי!**`,
       examples: [
+        '# שלב 1: העלאת קבצים',
         'cd /home/noam/projects/dev/ovu-ulm/backend',
         'scp -i ~/.ssh/ovu_key -r app/ ploi@64.176.171.223:/home/ploi/ovu-ulm/backend/',
-        'ssh -i ~/.ssh/ovu_key ploi@64.176.171.223 "cd /home/ploi/ovu-ulm/backend && pkill -f \'uvicorn.*ulm\' && nohup venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8001 > /dev/null 2>&1 &"'
+        '',
+        '# שלב 2: זיהוי PID',
+        'ssh -i ~/.ssh/ovu_key ploi@64.176.171.223 "lsof -i :8001 | grep -v COMMAND"',
+        '# תקבל PID - לדוגמה: 1729602',
+        '',
+        '# שלב 3: עצירה חזקה (החלף [PID] במספר האמיתי)',
+        'ssh -i ~/.ssh/ovu_key ploi@64.176.171.223 "kill -9 [PID]"',
+        '',
+        '# שלב 4: הפעלה מחדש',
+        'ssh -i ~/.ssh/ovu_key ploi@64.176.171.223 "cd /home/ploi/ovu-ulm/backend && nohup venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8001 > /dev/null 2>&1 &"',
+        '',
+        '# וידוא: בדיקה שהשרת רץ',
+        'sleep 3',
+        'curl -s http://64.176.171.223:8001/api/v1/health | head -5'
       ]
     },
     {

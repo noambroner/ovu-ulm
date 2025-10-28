@@ -15,7 +15,7 @@ from app.models.user_preferences import UserDataGridPreference, UserSearchHistor
 from app.core.security import get_current_user
 
 
-router = APIRouter(prefix="/api/v1", tags=["User Preferences"])
+router = APIRouter(tags=["User Preferences"])
 
 
 # ================================================

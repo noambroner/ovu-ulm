@@ -76,10 +76,12 @@ api.interceptors.response.use(
       const refreshToken = localStorage.getItem('ulm_refresh_token');
       
       if (!refreshToken) {
-        // No refresh token, redirect to login
+        // No refresh token, clear tokens and reject
+        isRefreshing = false;
         localStorage.removeItem('ulm_token');
         localStorage.removeItem('ulm_refresh_token');
-        window.location.href = '/';
+        // Dispatch event to notify app of logout
+        window.dispatchEvent(new CustomEvent('auth:logout'));
         return Promise.reject(error);
       }
 
@@ -102,13 +104,14 @@ api.interceptors.response.use(
         // Retry the original request
         return api(originalRequest);
       } catch (refreshError) {
-        // Refresh failed, logout user
+        // Refresh failed, clear tokens and reject
         processQueue(refreshError, null);
         isRefreshing = false;
         
         localStorage.removeItem('ulm_token');
         localStorage.removeItem('ulm_refresh_token');
-        window.location.href = '/';
+        // Dispatch event to notify app of logout
+        window.dispatchEvent(new CustomEvent('auth:logout'));
         
         return Promise.reject(refreshError);
       }

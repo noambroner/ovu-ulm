@@ -153,18 +153,56 @@ function AppContent() {
   useEffect(() => {
     const checkAuth = async () => {
       const token = localStorage.getItem('ulm_token');
-      if (token) {
-        try {
-          const response = await api.get('/api/v1/auth/me');
-          setUserInfo(response.data);
-          setIsLoggedIn(true);
-        } catch (err) {
-          localStorage.removeItem('ulm_token');
-        }
+      const refreshToken = localStorage.getItem('ulm_refresh_token');
+      
+      // If no tokens at all, skip auth check
+      if (!token || !refreshToken) {
+        localStorage.removeItem('ulm_token');
+        localStorage.removeItem('ulm_refresh_token');
+        setLoading(false);
+        setIsLoggedIn(false);
+        return;
       }
-      setLoading(false);
+      
+      try {
+        const response = await api.get('/api/v1/auth/me');
+        setUserInfo(response.data);
+        setIsLoggedIn(true);
+      } catch (err) {
+        // Clear both tokens on auth failure
+        localStorage.removeItem('ulm_token');
+        localStorage.removeItem('ulm_refresh_token');
+        setIsLoggedIn(false);
+      } finally {
+        setLoading(false);
+      }
     };
     checkAuth();
+
+    // Listen for token removal (from axios interceptor or other tabs)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'ulm_token' && !e.newValue) {
+        // Token was removed, logout user
+        setIsLoggedIn(false);
+        setUserInfo(null);
+        setLoading(false);
+      }
+    };
+
+    // Listen for auth:logout event from axios interceptor (same tab)
+    const handleAuthLogout = () => {
+      setIsLoggedIn(false);
+      setUserInfo(null);
+      setLoading(false);
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('auth:logout', handleAuthLogout);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('auth:logout', handleAuthLogout);
+    };
   }, []);
 
   const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');

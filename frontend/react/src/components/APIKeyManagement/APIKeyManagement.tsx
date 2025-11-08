@@ -515,7 +515,6 @@ export const APIKeyManagement = ({ language = 'he', theme = 'light' }: APIKeyMan
           keyField="id"
           language={language}
           theme={theme}
-          persistStateKey="api-keys-grid"
           emptyMessage={texts.noKeys}
           height="calc(100vh - 280px)"
           stickyHeader={true}

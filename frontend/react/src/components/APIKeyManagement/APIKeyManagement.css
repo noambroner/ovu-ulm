@@ -45,6 +45,14 @@
   min-width: 1200px;
 }
 
+/* Fix row height - override DataGrid default */
+.api-key-management .data-grid-table td {
+  height: auto !important;
+  padding: 0.5rem 0.75rem !important;
+  line-height: 1.4 !important;
+  vertical-align: middle;
+}
+
 /* Toolbar Actions */
 .toolbar-actions {
   display: flex;

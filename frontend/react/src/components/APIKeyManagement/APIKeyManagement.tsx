@@ -306,10 +306,10 @@ export const APIKeyManagement = ({ language = 'he', theme = 'light' }: APIKeyMan
       filterType: 'text',
       minWidth: '200px',
       render: (value: string, row: APIKey) => (
-        <div>
-          <div style={{ fontWeight: 600, marginBottom: '4px' }}>{value}</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+          <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>{value}</div>
           {row.owner_name && (
-            <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+            <div style={{ fontSize: '0.75rem', color: 'var(--dg-text-secondary)', opacity: 0.8 }}>
               {texts.owner}: {row.owner_name}
             </div>
           )}
@@ -325,7 +325,7 @@ export const APIKeyManagement = ({ language = 'he', theme = 'light' }: APIKeyMan
       filterType: 'text',
       width: '150px',
       render: (value: string) => (
-        <code style={{ fontFamily: 'monospace', fontSize: '0.85rem', background: 'var(--background-color)', padding: '2px 6px', borderRadius: '4px' }}>
+        <code style={{ fontFamily: 'monospace', fontSize: '0.8125rem', background: 'rgba(0,0,0,0.05)', padding: '3px 8px', borderRadius: '4px', fontWeight: 500 }}>
           {value}
         </code>
       )
@@ -351,10 +351,11 @@ export const APIKeyManagement = ({ language = 'he', theme = 'light' }: APIKeyMan
           style={{ 
             backgroundColor: getTypeColor(value),
             color: 'white',
-            padding: '0.25rem 0.75rem',
+            padding: '0.125rem 0.5rem',
             borderRadius: '4px',
-            fontSize: '0.85rem',
-            fontWeight: 600
+            fontSize: '0.75rem',
+            fontWeight: 600,
+            display: 'inline-block'
           }}
         >
           {getTypeText(value)}
@@ -376,7 +377,10 @@ export const APIKeyManagement = ({ language = 'he', theme = 'light' }: APIKeyMan
       ],
       width: '100px',
       render: (value: string) => (
-        <span className={`status-badge ${getStatusClass(value)}`}>
+        <span 
+          className={`status-badge ${getStatusClass(value)}`}
+          style={{ fontSize: '0.875rem', fontWeight: 600 }}
+        >
           {getStatusText(value)}
         </span>
       )
@@ -386,10 +390,11 @@ export const APIKeyManagement = ({ language = 'he', theme = 'light' }: APIKeyMan
       label: texts.created,
       field: 'created_at',
       sortable: true,
-      filterable: false,
+      filterable: true,
+      filterType: 'text',
       width: '180px',
       render: (value: string) => (
-        <span style={{ fontSize: '0.85rem' }}>
+        <span style={{ fontSize: '0.75rem', color: 'var(--dg-text-secondary)' }}>
           {formatDate(value)}
         </span>
       )
@@ -399,10 +404,11 @@ export const APIKeyManagement = ({ language = 'he', theme = 'light' }: APIKeyMan
       label: texts.lastUsed,
       field: 'last_used_at',
       sortable: true,
-      filterable: false,
+      filterable: true,
+      filterType: 'text',
       width: '180px',
       render: (value: string | null) => (
-        <span style={{ fontSize: '0.85rem', color: value ? 'inherit' : 'var(--text-secondary)' }}>
+        <span style={{ fontSize: '0.75rem', color: value ? 'var(--dg-text-secondary)' : 'var(--text-secondary)' }}>
           {formatDate(value)}
         </span>
       )
@@ -412,16 +418,22 @@ export const APIKeyManagement = ({ language = 'he', theme = 'light' }: APIKeyMan
       label: texts.requests,
       field: 'total_requests_count',
       sortable: true,
-      filterable: false,
+      filterable: true,
+      filterType: 'number',
       width: '100px',
-      render: (value: number) => value.toLocaleString()
+      render: (value: number) => (
+        <span style={{ fontWeight: 500 }}>
+          {value.toLocaleString()}
+        </span>
+      )
     },
     {
       id: 'rateLimit',
       label: texts.rateLimit,
       field: 'rate_limit_per_minute',
       sortable: true,
-      filterable: false,
+      filterable: true,
+      filterType: 'number',
       width: '120px',
       render: (value: number) => `${value}${texts.perMinute}`
     },
@@ -546,6 +558,8 @@ export const APIKeyManagement = ({ language = 'he', theme = 'light' }: APIKeyMan
 
 // Create API Key Modal
 interface CreateAPIKeyModalProps {
+  language?: string;
+  theme?: string;
   texts: any;
   onClose: () => void;
   onSuccess: (response: NewAPIKeyResponse) => void;

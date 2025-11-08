@@ -192,7 +192,7 @@ export const APIKeyManagement = ({ language = 'he', theme = 'light' }: APIKeyMan
     }
   };
 
-  const texts = t[language] || t['he'];
+  const texts = t[language as keyof typeof t] || t['he'];
   
   // Load API keys
   const loadAPIKeys = async () => {

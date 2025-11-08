@@ -586,7 +586,7 @@ function AppContent() {
             <Route path="/dev-journal/session/:sessionId/steps" element={<SessionSteps language={language} theme={theme} />} />
             <Route path="/dev-journal/session/:sessionId/state" element={<SystemState language={language} theme={theme} />} />
             <Route path="/dev-guidelines" element={<DevelopmentGuidelines language={language} theme={theme} />} />
-            <Route path="/api-keys" element={<APIKeyManagement />} />
+            <Route path="/api-keys" element={<APIKeyManagement language={language} theme={theme} />} />
             <Route path="/api/ui" element={<APIUIEndpoints language={language} theme={theme} appType="ulm" />} />
             <Route path="/api/functions" element={<APIFunctions language={language} theme={theme} appType="ulm" />} />
             <Route path="*" element={<Dashboard language={language} theme={theme} stats={stats} activities={activities} quickActions={quickActions} />} />

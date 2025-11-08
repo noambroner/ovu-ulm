@@ -1,20 +1,16 @@
 /**
  * API Key Management Component
  * ============================
- * Complete UI for managing API keys for external integrations.
- * 
- * Features:
- * - List all API keys with filtering
- * - Create new API key (shows key only once!)
- * - View API key details
- * - Edit API key settings
- * - Revoke API key
- * - View usage statistics
- * - Audit trail
+ * ניהול מפתחות API עבור אינטגרציות חיצוניות
  */
 import { useState, useEffect } from 'react';
 import api from '../../api/axios.config';
 import './APIKeyManagement.css';
+
+interface APIKeyManagementProps {
+  language?: 'he' | 'en' | 'ar';
+  theme?: 'light' | 'dark';
+}
 
 interface APIKey {
   id: number;
@@ -35,7 +31,7 @@ interface APIKey {
 interface NewAPIKeyResponse {
   id: number;
   key_name: string;
-  api_key: string;  // ⚠️ Only shown once!
+  api_key: string;
   api_key_prefix: string;
   app_type: string;
   status: string;
@@ -44,13 +40,159 @@ interface NewAPIKeyResponse {
   rate_limit_per_minute: number;
 }
 
-export const APIKeyManagement = () => {
+export const APIKeyManagement = ({ language = 'he', theme = 'light' }: APIKeyManagementProps) => {
   const [apiKeys, setApiKeys] = useState<APIKey[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newKeyResponse, setNewKeyResponse] = useState<NewAPIKeyResponse | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>('all');
+
+  // תרגומים
+  const t = {
+    he: {
+      title: 'ניהול מפתחות API',
+      subtitle: 'ניהול מפתחות API עבור אינטגרציות ויישומים חיצוניים',
+      createKey: 'צור מפתח חדש',
+      loading: 'טוען מפתחות...',
+      noKeys: 'לא נמצאו מפתחות API',
+      createFirst: 'צור את המפתח הראשון שלך',
+      name: 'שם',
+      keyPrefix: 'קידומת מפתח',
+      type: 'סוג',
+      status: 'סטטוס',
+      created: 'נוצר',
+      lastUsed: 'שימוש אחרון',
+      requests: 'בקשות',
+      rateLimit: 'מגבלת קצב',
+      actions: 'פעולות',
+      statusAll: 'הכל',
+      statusActive: 'פעיל',
+      statusSuspended: 'מושהה',
+      statusRevoked: 'מבוטל',
+      statusExpired: 'פג תוקף',
+      typeIntegration: 'אינטגרציה',
+      typeMobile: 'מובייל',
+      typeWeb: 'Web',
+      typeService: 'שירות',
+      typeBot: 'בוט',
+      viewDetails: 'צפה בפרטים',
+      revoke: 'בטל',
+      delete: 'מחק',
+      revokeConfirm: 'האם אתה בטוח שברצונך לבטל את המפתח',
+      revokeReason: 'סיבה לביטול (אופציונלי):',
+      revokeSuccess: 'המפתח בוטל בהצלחה',
+      revokeFailed: 'שגיאה בביטול המפתח',
+      deleteConfirm: 'האם אתה בטוח שברצונך למחוק את המפתח',
+      deleteWarning: 'פעולה זו תמחק גם את כל סטטיסטיקות השימוש ולוגים. לא ניתן לבטל.',
+      deleteSuccess: 'המפתח נמחק בהצלחה',
+      deleteFailed: 'שגיאה במחיקת המפתח',
+      perMinute: '/דקה',
+      never: 'אף פעם',
+      owner: 'בעלים',
+      // Create Modal
+      createNewKey: 'צור מפתח API חדש',
+      keyName: 'שם המפתח',
+      keyNameRequired: 'שם המפתח נדרש',
+      keyNamePlaceholder: 'לדוגמה: אפליקציית מובייל v2',
+      applicationType: 'סוג האפליקציה',
+      ownerName: 'שם הבעלים',
+      ownerEmail: 'אימייל בעלים',
+      description: 'תיאור',
+      descriptionPlaceholder: 'מטרת המפתח...',
+      scopes: 'הרשאות (Scopes)',
+      rateLimitPerMin: 'מגבלה לדקה',
+      rateLimitPerHour: 'מגבלה לשעה',
+      rateLimitPerDay: 'מגבלה ליום',
+      expiresInDays: 'תוקף (ימים)',
+      expiresPlaceholder: 'לדוגמה: 365',
+      noExpiration: 'ללא תפוגה',
+      cancel: 'ביטול',
+      create: 'צור מפתח',
+      creating: 'יוצר...',
+      // New Key Display
+      keyCreatedSuccess: 'מפתח API נוצר בהצלחה!',
+      importantSaveKey: 'חשוב: שמור את המפתח עכשיו!',
+      keyShownOnce: 'זוהי הפעם היחידה שתראה את המפתח המלא. לא ניתן לשחזר אותו מאוחר יותר.',
+      apiKey: 'מפתח API:',
+      copy: 'העתק',
+      copied: 'הועתק!',
+      usageExample: 'דוגמת שימוש:',
+      iSaved: 'שמרתי את המפתח'
+    },
+    en: {
+      title: 'API Keys Management',
+      subtitle: 'Manage API keys for external integrations and applications',
+      createKey: 'Create API Key',
+      loading: 'Loading keys...',
+      noKeys: 'No API keys found',
+      createFirst: 'Create your first API key',
+      name: 'Name',
+      keyPrefix: 'Key Prefix',
+      type: 'Type',
+      status: 'Status',
+      created: 'Created',
+      lastUsed: 'Last Used',
+      requests: 'Requests',
+      rateLimit: 'Rate Limit',
+      actions: 'Actions',
+      statusAll: 'All',
+      statusActive: 'Active',
+      statusSuspended: 'Suspended',
+      statusRevoked: 'Revoked',
+      statusExpired: 'Expired',
+      typeIntegration: 'Integration',
+      typeMobile: 'Mobile',
+      typeWeb: 'Web',
+      typeService: 'Service',
+      typeBot: 'Bot',
+      viewDetails: 'View Details',
+      revoke: 'Revoke',
+      delete: 'Delete',
+      revokeConfirm: 'Are you sure you want to revoke the key',
+      revokeReason: 'Reason for revocation (optional):',
+      revokeSuccess: 'API key revoked successfully',
+      revokeFailed: 'Failed to revoke API key',
+      deleteConfirm: 'Are you sure you want to DELETE the key',
+      deleteWarning: 'This will delete all usage statistics and logs. Cannot be undone.',
+      deleteSuccess: 'API key deleted successfully',
+      deleteFailed: 'Failed to delete API key',
+      perMinute: '/min',
+      never: 'Never',
+      owner: 'Owner',
+      // Create Modal
+      createNewKey: 'Create New API Key',
+      keyName: 'Key Name',
+      keyNameRequired: 'Key name is required',
+      keyNamePlaceholder: 'e.g., Mobile App v2',
+      applicationType: 'Application Type',
+      ownerName: 'Owner Name',
+      ownerEmail: 'Owner Email',
+      description: 'Description',
+      descriptionPlaceholder: 'Purpose of this key...',
+      scopes: 'Scopes (Permissions)',
+      rateLimitPerMin: 'Rate Limit (per minute)',
+      rateLimitPerHour: 'Rate Limit (per hour)',
+      rateLimitPerDay: 'Rate Limit (per day)',
+      expiresInDays: 'Expires In (days)',
+      expiresPlaceholder: 'e.g., 365',
+      noExpiration: 'No expiration',
+      cancel: 'Cancel',
+      create: 'Create Key',
+      creating: 'Creating...',
+      // New Key Display
+      keyCreatedSuccess: 'API Key Created Successfully!',
+      importantSaveKey: 'IMPORTANT: Save this key now!',
+      keyShownOnce: 'This is the only time you will see the full key. Cannot be retrieved later.',
+      apiKey: 'API Key:',
+      copy: 'Copy',
+      copied: 'Copied!',
+      usageExample: 'Usage Example:',
+      iSaved: 'I have saved the key'
+    }
+  };
+
+  const texts = t[language];
   
   // Load API keys
   const loadAPIKeys = async () => {
@@ -72,53 +214,48 @@ export const APIKeyManagement = () => {
     loadAPIKeys();
   }, [filterStatus]);
 
-  // Handle create API key
   const handleCreateKey = () => {
     setShowCreateModal(true);
     setNewKeyResponse(null);
   };
 
-  // Handle revoke API key
   const handleRevoke = async (keyId: number, keyName: string) => {
-    if (!confirm(`Are you sure you want to revoke API key "${keyName}"? This action cannot be undone.`)) {
+    if (!confirm(`${texts.revokeConfirm} "${keyName}"? ${texts.deleteWarning}`)) {
       return;
     }
 
     try {
-      const reason = prompt('Reason for revocation (optional):');
+      const reason = prompt(texts.revokeReason);
       await api.post(`/api/v1/api-keys/${keyId}/revoke`, {
         reason: reason || undefined
       });
-      alert('API key revoked successfully');
+      alert(texts.revokeSuccess);
       loadAPIKeys();
     } catch (err: any) {
-      alert(`Failed to revoke API key: ${err.response?.data?.detail || err.message}`);
+      alert(`${texts.revokeFailed}: ${err.response?.data?.detail || err.message}`);
     }
   };
 
-  // Handle delete API key
   const handleDelete = async (keyId: number, keyName: string) => {
-    if (!confirm(`Are you sure you want to DELETE API key "${keyName}"? This will also delete all usage statistics and audit logs. This action cannot be undone.`)) {
+    if (!confirm(`${texts.deleteConfirm} "${keyName}"? ${texts.deleteWarning}`)) {
       return;
     }
 
     try {
       await api.delete(`/api/v1/api-keys/${keyId}`);
-      alert('API key deleted successfully');
+      alert(texts.deleteSuccess);
       loadAPIKeys();
     } catch (err: any) {
-      alert(`Failed to delete API key: ${err.response?.data?.detail || err.message}`);
+      alert(`${texts.deleteFailed}: ${err.response?.data?.detail || err.message}`);
     }
   };
 
-  // Format date
   const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'Never';
+    if (!dateString) return texts.never;
     const date = new Date(dateString);
-    return date.toLocaleString();
+    return date.toLocaleString(language === 'he' ? 'he-IL' : 'en-US');
   };
 
-  // Get status badge class
   const getStatusClass = (status: string) => {
     switch (status) {
       case 'active': return 'status-active';
@@ -129,57 +266,87 @@ export const APIKeyManagement = () => {
     }
   };
 
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'active': return texts.statusActive;
+      case 'suspended': return texts.statusSuspended;
+      case 'revoked': return texts.statusRevoked;
+      case 'expired': return texts.statusExpired;
+      default: return status;
+    }
+  };
+
+  const getTypeText = (type: string) => {
+    switch (type) {
+      case 'integration': return texts.typeIntegration;
+      case 'mobile': return texts.typeMobile;
+      case 'web': return texts.typeWeb;
+      case 'service': return texts.typeService;
+      case 'bot': return texts.typeBot;
+      default: return type;
+    }
+  };
+
   return (
-    <div className="api-key-management">
-      <div className="header">
-        <div className="header-content">
-          <h1>🔐 API Keys Management</h1>
-          <p>Manage API keys for external integrations and applications</p>
+    <div className={`api-key-management ${theme}`} dir={language === 'he' || language === 'ar' ? 'rtl' : 'ltr'}>
+      <div className="logs-header">
+        <h1 className="logs-title">🔐 {texts.title}</h1>
+        <p className="logs-subtitle">{texts.subtitle}</p>
+      </div>
+
+      <div className="toolbar">
+        <div className="filter-group">
+          <label>{texts.status}:</label>
+          <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="filter-select">
+            <option value="all">{texts.statusAll}</option>
+            <option value="active">{texts.statusActive}</option>
+            <option value="suspended">{texts.statusSuspended}</option>
+            <option value="revoked">{texts.statusRevoked}</option>
+            <option value="expired">{texts.statusExpired}</option>
+          </select>
         </div>
-        <button className="btn-create" onClick={handleCreateKey}>
-          ➕ Create API Key
+        <button className="pagination-btn" onClick={handleCreateKey}>
+          ➕ {texts.createKey}
         </button>
       </div>
 
-      {/* Filters */}
-      <div className="filters">
-        <div className="filter-group">
-          <label>Status:</label>
-          <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
-            <option value="all">All</option>
-            <option value="active">Active</option>
-            <option value="suspended">Suspended</option>
-            <option value="revoked">Revoked</option>
-            <option value="expired">Expired</option>
-          </select>
+      {loading && (
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>{texts.loading}</p>
         </div>
-      </div>
+      )}
 
-      {/* Loading / Error */}
-      {loading && <div className="loading">Loading API keys...</div>}
-      {error && <div className="error">{error}</div>}
+      {error && (
+        <div className="error-container">
+          <span className="error-icon">⚠️</span>
+          <p>{error}</p>
+        </div>
+      )}
 
-      {/* API Keys Table */}
       {!loading && !error && (
-        <div className="api-keys-table">
+        <div className="logs-table-wrapper">
           {apiKeys.length === 0 ? (
-            <div className="empty-state">
-              <p>No API keys found</p>
-              <button onClick={handleCreateKey}>Create your first API key</button>
+            <div className="no-logs-container">
+              <span className="no-logs-icon">🔑</span>
+              <p>{texts.noKeys}</p>
+              <button className="pagination-btn" onClick={handleCreateKey}>
+                {texts.createFirst}
+              </button>
             </div>
           ) : (
-            <table>
+            <table className="logs-table">
               <thead>
                 <tr>
-                  <th>Name</th>
-                  <th>Key Prefix</th>
-                  <th>Type</th>
-                  <th>Status</th>
-                  <th>Created</th>
-                  <th>Last Used</th>
-                  <th>Requests</th>
-                  <th>Rate Limit</th>
-                  <th>Actions</th>
+                  <th>{texts.name}</th>
+                  <th>{texts.keyPrefix}</th>
+                  <th>{texts.type}</th>
+                  <th>{texts.status}</th>
+                  <th>{texts.created}</th>
+                  <th>{texts.lastUsed}</th>
+                  <th>{texts.requests}</th>
+                  <th>{texts.rateLimit}</th>
+                  <th>{texts.actions}</th>
                 </tr>
               </thead>
               <tbody>
@@ -187,47 +354,47 @@ export const APIKeyManagement = () => {
                   <tr key={key.id}>
                     <td>
                       <div className="key-name">{key.key_name}</div>
-                      {key.owner_name && <div className="key-owner">{key.owner_name}</div>}
+                      {key.owner_name && <div className="key-owner">{texts.owner}: {key.owner_name}</div>}
                     </td>
                     <td>
-                      <code className="key-prefix">{key.api_key_prefix}</code>
+                      <code className="endpoint-cell">{key.api_key_prefix}</code>
                     </td>
                     <td>
-                      <span className={`type-badge type-${key.app_type}`}>
-                        {key.app_type}
+                      <span className={`method-badge type-${key.app_type}`}>
+                        {getTypeText(key.app_type)}
                       </span>
                     </td>
                     <td>
                       <span className={`status-badge ${getStatusClass(key.status)}`}>
-                        {key.status}
+                        {getStatusText(key.status)}
                       </span>
                     </td>
-                    <td>{formatDate(key.created_at)}</td>
-                    <td>{formatDate(key.last_used_at)}</td>
+                    <td className="timestamp-cell">{formatDate(key.created_at)}</td>
+                    <td className="timestamp-cell">{formatDate(key.last_used_at)}</td>
                     <td>{key.total_requests_count.toLocaleString()}</td>
-                    <td>{key.rate_limit_per_minute}/min</td>
+                    <td>{key.rate_limit_per_minute}{texts.perMinute}</td>
                     <td>
-                      <div className="actions">
+                      <div className="action-buttons">
                         <button
-                          className="btn-small btn-view"
-                          onClick={() => alert('View details coming soon!')}
-                          title="View Details"
+                          className="view-details-btn"
+                          onClick={() => alert(`${texts.viewDetails} - ${key.key_name}`)}
+                          title={texts.viewDetails}
                         >
                           👁️
                         </button>
                         {key.status === 'active' && (
                           <button
-                            className="btn-small btn-revoke"
+                            className="view-details-btn"
                             onClick={() => handleRevoke(key.id, key.key_name)}
-                            title="Revoke"
+                            title={texts.revoke}
                           >
                             🚫
                           </button>
                         )}
                         <button
-                          className="btn-small btn-delete"
+                          className="view-details-btn"
                           onClick={() => handleDelete(key.id, key.key_name)}
-                          title="Delete"
+                          title={texts.delete}
                         >
                           🗑️
                         </button>
@@ -241,9 +408,11 @@ export const APIKeyManagement = () => {
         </div>
       )}
 
-      {/* Create Modal */}
       {showCreateModal && (
         <CreateAPIKeyModal
+          language={language}
+          theme={theme}
+          texts={texts}
           onClose={() => setShowCreateModal(false)}
           onSuccess={(response) => {
             setNewKeyResponse(response);
@@ -252,9 +421,11 @@ export const APIKeyManagement = () => {
         />
       )}
 
-      {/* New Key Display Modal */}
       {newKeyResponse && (
         <NewKeyDisplayModal
+          language={language}
+          theme={theme}
+          texts={texts}
           keyData={newKeyResponse}
           onClose={() => setNewKeyResponse(null)}
         />
@@ -265,11 +436,14 @@ export const APIKeyManagement = () => {
 
 // Create API Key Modal
 interface CreateAPIKeyModalProps {
+  language: string;
+  theme: string;
+  texts: any;
   onClose: () => void;
   onSuccess: (response: NewAPIKeyResponse) => void;
 }
 
-const CreateAPIKeyModal = ({ onClose, onSuccess }: CreateAPIKeyModalProps) => {
+const CreateAPIKeyModal = ({ language, theme, texts, onClose, onSuccess }: CreateAPIKeyModalProps) => {
   const [formData, setFormData] = useState({
     key_name: '',
     app_type: 'integration',
@@ -289,7 +463,7 @@ const CreateAPIKeyModal = ({ onClose, onSuccess }: CreateAPIKeyModalProps) => {
     e.preventDefault();
     
     if (!formData.key_name.trim()) {
-      setError('Key name is required');
+      setError(texts.keyNameRequired);
       return;
     }
 
@@ -300,7 +474,7 @@ const CreateAPIKeyModal = ({ onClose, onSuccess }: CreateAPIKeyModalProps) => {
       onSuccess(response.data);
       onClose();
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to create API key');
+      setError(err.response?.data?.detail || texts.revokeFailed);
     } finally {
       setLoading(false);
     }
@@ -322,72 +496,75 @@ const CreateAPIKeyModal = ({ onClose, onSuccess }: CreateAPIKeyModalProps) => {
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+    <div className="details-modal-overlay" onClick={onClose}>
+      <div className="details-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2>Create New API Key</h2>
-          <button className="btn-close" onClick={onClose}>×</button>
+          <h2>{texts.createNewKey}</h2>
+          <button className="modal-close-btn" onClick={onClose}>×</button>
         </div>
 
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Key Name *</label>
+        <form onSubmit={handleSubmit} className="modal-body">
+          <div className="modal-section">
+            <strong>{texts.keyName} *</strong>
             <input
               type="text"
               value={formData.key_name}
               onChange={(e) => setFormData({...formData, key_name: e.target.value})}
-              placeholder="e.g., Mobile App v2"
+              placeholder={texts.keyNamePlaceholder}
               required
+              className="form-input"
             />
           </div>
 
-          <div className="form-group">
-            <label>Application Type</label>
+          <div className="modal-section">
+            <strong>{texts.applicationType}</strong>
             <select
               value={formData.app_type}
               onChange={(e) => setFormData({...formData, app_type: e.target.value})}
+              className="form-input"
             >
-              <option value="integration">Integration</option>
-              <option value="mobile">Mobile App</option>
-              <option value="web">Web App</option>
-              <option value="service">Service</option>
-              <option value="bot">Bot</option>
+              <option value="integration">{texts.typeIntegration}</option>
+              <option value="mobile">{texts.typeMobile}</option>
+              <option value="web">{texts.typeWeb}</option>
+              <option value="service">{texts.typeService}</option>
+              <option value="bot">{texts.typeBot}</option>
             </select>
           </div>
 
           <div className="form-row">
-            <div className="form-group">
-              <label>Owner Name</label>
+            <div className="modal-section">
+              <strong>{texts.ownerName}</strong>
               <input
                 type="text"
                 value={formData.owner_name}
                 onChange={(e) => setFormData({...formData, owner_name: e.target.value})}
-                placeholder="John Doe"
+                className="form-input"
               />
             </div>
-            <div className="form-group">
-              <label>Owner Email</label>
+            <div className="modal-section">
+              <strong>{texts.ownerEmail}</strong>
               <input
                 type="email"
                 value={formData.owner_email}
                 onChange={(e) => setFormData({...formData, owner_email: e.target.value})}
-                placeholder="john@example.com"
+                className="form-input"
               />
             </div>
           </div>
 
-          <div className="form-group">
-            <label>Description</label>
+          <div className="modal-section">
+            <strong>{texts.description}</strong>
             <textarea
               value={formData.description}
               onChange={(e) => setFormData({...formData, description: e.target.value})}
-              placeholder="Purpose of this API key..."
+              placeholder={texts.descriptionPlaceholder}
               rows={3}
+              className="form-input"
             />
           </div>
 
-          <div className="form-group">
-            <label>Scopes (Permissions)</label>
+          <div className="modal-section">
+            <strong>{texts.scopes}</strong>
             <div className="scopes-grid">
               {availableScopes.map(scope => (
                 <label key={scope} className="scope-checkbox">
@@ -403,54 +580,58 @@ const CreateAPIKeyModal = ({ onClose, onSuccess }: CreateAPIKeyModalProps) => {
           </div>
 
           <div className="form-row">
-            <div className="form-group">
-              <label>Rate Limit (per minute)</label>
+            <div className="modal-section">
+              <strong>{texts.rateLimitPerMin}</strong>
               <input
                 type="number"
                 value={formData.rate_limit_per_minute}
                 onChange={(e) => setFormData({...formData, rate_limit_per_minute: parseInt(e.target.value)})}
                 min={1}
+                className="form-input"
               />
             </div>
-            <div className="form-group">
-              <label>Rate Limit (per hour)</label>
+            <div className="modal-section">
+              <strong>{texts.rateLimitPerHour}</strong>
               <input
                 type="number"
                 value={formData.rate_limit_per_hour}
                 onChange={(e) => setFormData({...formData, rate_limit_per_hour: parseInt(e.target.value)})}
                 min={1}
+                className="form-input"
               />
             </div>
-            <div className="form-group">
-              <label>Rate Limit (per day)</label>
+            <div className="modal-section">
+              <strong>{texts.rateLimitPerDay}</strong>
               <input
                 type="number"
                 value={formData.rate_limit_per_day}
                 onChange={(e) => setFormData({...formData, rate_limit_per_day: parseInt(e.target.value)})}
                 min={1}
+                className="form-input"
               />
             </div>
           </div>
 
-          <div className="form-group">
-            <label>Expires In (days) - Leave empty for no expiration</label>
+          <div className="modal-section">
+            <strong>{texts.expiresInDays} - {texts.noExpiration}</strong>
             <input
               type="number"
               value={formData.expires_in_days || ''}
               onChange={(e) => setFormData({...formData, expires_in_days: e.target.value ? parseInt(e.target.value) : null})}
-              placeholder="e.g., 365"
+              placeholder={texts.expiresPlaceholder}
               min={1}
+              className="form-input"
             />
           </div>
 
           {error && <div className="error-message">{error}</div>}
 
           <div className="modal-footer">
-            <button type="button" onClick={onClose} disabled={loading}>
-              Cancel
+            <button type="button" onClick={onClose} className="pagination-btn" disabled={loading}>
+              {texts.cancel}
             </button>
-            <button type="submit" className="btn-primary" disabled={loading}>
-              {loading ? 'Creating...' : 'Create API Key'}
+            <button type="submit" className="pagination-btn" disabled={loading}>
+              {loading ? texts.creating : texts.create}
             </button>
           </div>
         </form>
@@ -459,13 +640,16 @@ const CreateAPIKeyModal = ({ onClose, onSuccess }: CreateAPIKeyModalProps) => {
   );
 };
 
-// New Key Display Modal (shows key only once!)
+// New Key Display Modal
 interface NewKeyDisplayModalProps {
+  language: string;
+  theme: string;
+  texts: any;
   keyData: NewAPIKeyResponse;
   onClose: () => void;
 }
 
-const NewKeyDisplayModal = ({ keyData, onClose }: NewKeyDisplayModalProps) => {
+const NewKeyDisplayModal = ({ language, theme, texts, keyData, onClose }: NewKeyDisplayModalProps) => {
   const [copied, setCopied] = useState(false);
 
   const copyToClipboard = () => {
@@ -475,67 +659,61 @@ const NewKeyDisplayModal = ({ keyData, onClose }: NewKeyDisplayModalProps) => {
   };
 
   return (
-    <div className="modal-overlay">
-      <div className="modal-content new-key-modal">
-        <div className="modal-header success">
-          <h2>✅ API Key Created Successfully!</h2>
+    <div className="details-modal-overlay">
+      <div className="details-modal">
+        <div className="modal-header">
+          <h2>✅ {texts.keyCreatedSuccess}</h2>
         </div>
 
-        <div className="warning-box">
-          <h3>⚠️ IMPORTANT: Save this API key now!</h3>
-          <p>This is the <strong>only time</strong> you will see the full API key. It cannot be retrieved later.</p>
-        </div>
+        <div className="modal-body">
+          <div className="warning-box">
+            <h3>⚠️ {texts.importantSaveKey}</h3>
+            <p>{texts.keyShownOnce}</p>
+          </div>
 
-        <div className="key-display">
-          <label>API Key:</label>
-          <div className="key-value">
-            <code>{keyData.api_key}</code>
-            <button
-              className="btn-copy"
-              onClick={copyToClipboard}
-              title="Copy to clipboard"
-            >
-              {copied ? '✅ Copied!' : '📋 Copy'}
+          <div className="key-display">
+            <strong>{texts.apiKey}</strong>
+            <div className="key-value">
+              <code className="code-block">{keyData.api_key}</code>
+              <button
+                className="pagination-btn"
+                onClick={copyToClipboard}
+                title={texts.copy}
+              >
+                {copied ? texts.copied : texts.copy}
+              </button>
+            </div>
+          </div>
+
+          <div className="modal-section">
+            <strong>{texts.name}:</strong> {keyData.key_name}
+          </div>
+          <div className="modal-section">
+            <strong>{texts.type}:</strong> {keyData.app_type}
+          </div>
+          <div className="modal-section">
+            <strong>{texts.status}:</strong> <span className="status-badge status-active">{keyData.status}</span>
+          </div>
+          <div className="modal-section">
+            <strong>{texts.scopes}:</strong> {keyData.scopes.join(', ') || texts.never}
+          </div>
+          <div className="modal-section">
+            <strong>{texts.rateLimit}:</strong> {keyData.rate_limit_per_minute} {texts.perMinute}
+          </div>
+
+          <div className="modal-section">
+            <strong>{texts.usageExample}</strong>
+            <pre className="code-block">{`curl https://ulm-rct.ovu.co.il/api/v1/users \\
+  -H "X-API-Key: ${keyData.api_key}"`}</pre>
+          </div>
+
+          <div className="modal-footer">
+            <button className="pagination-btn" onClick={onClose}>
+              {texts.iSaved}
             </button>
           </div>
-        </div>
-
-        <div className="key-info">
-          <div className="info-row">
-            <span>Name:</span>
-            <strong>{keyData.key_name}</strong>
-          </div>
-          <div className="info-row">
-            <span>Type:</span>
-            <strong>{keyData.app_type}</strong>
-          </div>
-          <div className="info-row">
-            <span>Status:</span>
-            <strong className="status-active">{keyData.status}</strong>
-          </div>
-          <div className="info-row">
-            <span>Scopes:</span>
-            <strong>{keyData.scopes.join(', ') || 'None'}</strong>
-          </div>
-          <div className="info-row">
-            <span>Rate Limit:</span>
-            <strong>{keyData.rate_limit_per_minute} req/min</strong>
-          </div>
-        </div>
-
-        <div className="usage-example">
-          <h4>Usage Example:</h4>
-          <pre><code>{`curl https://ulm-rct.ovu.co.il/api/v1/users \\
-  -H "X-API-Key: ${keyData.api_key}"`}</code></pre>
-        </div>
-
-        <div className="modal-footer">
-          <button className="btn-primary btn-large" onClick={onClose}>
-            I have saved the API key
-          </button>
         </div>
       </div>
     </div>
   );
 };
-

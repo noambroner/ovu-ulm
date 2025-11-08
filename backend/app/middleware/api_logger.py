@@ -30,12 +30,19 @@ class APILoggerMiddleware(BaseHTTPMiddleware):
         # Extract source information
         origin = request.headers.get("origin")
         referer = request.headers.get("referer")
-        app_source = request.headers.get("x-app-source", "unknown")
         
-        # Determine request type: 'ui' (internal frontend) or 'integration' (external/third-party)
-        # UI requests: app_source starts with 'ulm-' (e.g., ulm-react-web, ulm-flutter-mobile)
-        # Integration requests: everything else (unknown, external apps, third-party)
-        request_type = 'ui' if app_source.startswith('ulm-') else 'integration'
+        # Get app_source from request state (set by API Key middleware) or header
+        if hasattr(request.state, "app_source"):
+            # API Key middleware already determined the source
+            app_source = request.state.app_source
+            request_type = 'integration' if getattr(request.state, "is_integration", False) else 'ui'
+        else:
+            # Fallback to header
+            app_source = request.headers.get("x-app-source", "unknown")
+            # Determine request type: 'ui' (internal frontend) or 'integration' (external/third-party)
+            # UI requests: app_source starts with 'ulm-' (e.g., ulm-react-web, ulm-flutter-mobile)
+            # Integration requests: everything else (unknown, external apps, third-party)
+            request_type = 'ui' if app_source.startswith('ulm-') else 'integration'
         
         # Direction: Backend always receives 'inbound' requests
         direction = 'inbound'

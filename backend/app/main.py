@@ -17,6 +17,7 @@ from app.api.v1.router import api_router
 from app.middleware.localization_middleware import LocalizationMiddleware
 from app.middleware.api_logger import APILoggerMiddleware
 from app.middleware.auth_context import AuthContextMiddleware
+from app.middleware.api_key_auth import APIKeyAuthMiddleware
 from app.core.scheduler import start_scheduler, shutdown_scheduler
 
 # Configure logging
@@ -86,6 +87,10 @@ app.add_middleware(LocalizationMiddleware)
 # Add API Logger Middleware (logs all API requests/responses to database)
 # Uses BackgroundTask to log AFTER response is sent (non-blocking)
 app.add_middleware(APILoggerMiddleware)
+
+# Add API Key Authentication Middleware (validates API keys for integration requests)
+# MUST run BEFORE AuthContext to set request.state.app_source
+app.add_middleware(APIKeyAuthMiddleware)
 
 # Add Authentication Context Middleware (extracts user from JWT for logging)
 # MUST run BEFORE APILogger to populate request.state.user

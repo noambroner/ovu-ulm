@@ -17,7 +17,7 @@ import hashlib
 from app.core.database import get_db
 from app.core.security import get_current_user
 from app.models.api_keys import APIKey, APIKeyAuditLog
-from app.models.users import User
+from app.models.user import User
 
 router = APIRouter()
 

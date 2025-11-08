@@ -13,6 +13,7 @@ import { DatabaseViewer } from './components/DatabaseViewer/DatabaseViewer';
 import { APILogs } from './components/APILogs/APILogs';
 import { DevJournal, SessionSteps, SystemState } from './components/DevJournal';
 import { DevelopmentGuidelines } from './components/DevelopmentGuidelines/DevelopmentGuidelines';
+import { APIKeyManagement } from './components/APIKeyManagement';
 import './App.css';
 import './components/Layout/Layout.css';
 
@@ -304,6 +305,13 @@ function AppContent() {
           path: '/token-control'
         },
         {
+          id: 'api-keys',
+          label: 'מפתחות API',
+          labelEn: 'API Keys',
+          icon: '🔑',
+          path: '/api-keys'
+        },
+        {
           id: 'application-map',
           label: t.applicationMap,
           labelEn: t.applicationMap,
@@ -578,6 +586,7 @@ function AppContent() {
             <Route path="/dev-journal/session/:sessionId/steps" element={<SessionSteps language={language} theme={theme} />} />
             <Route path="/dev-journal/session/:sessionId/state" element={<SystemState language={language} theme={theme} />} />
             <Route path="/dev-guidelines" element={<DevelopmentGuidelines language={language} theme={theme} />} />
+            <Route path="/api-keys" element={<APIKeyManagement />} />
             <Route path="/api/ui" element={<APIUIEndpoints language={language} theme={theme} appType="ulm" />} />
             <Route path="/api/functions" element={<APIFunctions language={language} theme={theme} appType="ulm" />} />
             <Route path="*" element={<Dashboard language={language} theme={theme} stats={stats} activities={activities} quickActions={quickActions} />} />

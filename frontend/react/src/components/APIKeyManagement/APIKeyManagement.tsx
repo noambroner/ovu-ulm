@@ -3,8 +3,10 @@
  * ============================
  * ניהול מפתחות API עבור אינטגרציות חיצוניות
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import api from '../../api/axios.config';
+import { DataGrid } from '../../shared/DataGrid';
+import type { DataGridColumn } from '../../shared/DataGrid';
 import './APIKeyManagement.css';
 
 interface APIKeyManagementProps {
@@ -46,7 +48,6 @@ export const APIKeyManagement = ({ language = 'he', theme = 'light' }: APIKeyMan
   const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newKeyResponse, setNewKeyResponse] = useState<NewAPIKeyResponse | null>(null);
-  const [filterStatus, setFilterStatus] = useState<string>('all');
 
   // תרגומים
   const t = {
@@ -66,7 +67,6 @@ export const APIKeyManagement = ({ language = 'he', theme = 'light' }: APIKeyMan
       requests: 'בקשות',
       rateLimit: 'מגבלת קצב',
       actions: 'פעולות',
-      statusAll: 'הכל',
       statusActive: 'פעיל',
       statusSuspended: 'מושהה',
       statusRevoked: 'מבוטל',
@@ -136,7 +136,6 @@ export const APIKeyManagement = ({ language = 'he', theme = 'light' }: APIKeyMan
       requests: 'Requests',
       rateLimit: 'Rate Limit',
       actions: 'Actions',
-      statusAll: 'All',
       statusActive: 'Active',
       statusSuspended: 'Suspended',
       statusRevoked: 'Revoked',
@@ -199,9 +198,7 @@ export const APIKeyManagement = ({ language = 'he', theme = 'light' }: APIKeyMan
     try {
       setLoading(true);
       setError(null);
-      const response = await api.get('/api/v1/api-keys', {
-        params: filterStatus !== 'all' ? { status: filterStatus } : {}
-      });
+      const response = await api.get('/api/v1/api-keys');
       setApiKeys(response.data);
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Failed to load API keys');
@@ -212,7 +209,7 @@ export const APIKeyManagement = ({ language = 'he', theme = 'light' }: APIKeyMan
 
   useEffect(() => {
     loadAPIKeys();
-  }, [filterStatus]);
+  }, []);
 
   const handleCreateKey = () => {
     setShowCreateModal(true);
@@ -287,131 +284,246 @@ export const APIKeyManagement = ({ language = 'he', theme = 'light' }: APIKeyMan
     }
   };
 
+  const getTypeColor = (type: string) => {
+    switch (type) {
+      case 'integration': return '#3b82f6';
+      case 'mobile': return '#8b5cf6';
+      case 'web': return '#10b981';
+      case 'service': return '#f59e0b';
+      case 'bot': return '#ec4899';
+      default: return '#6b7280';
+    }
+  };
+
+  // Define columns for DataGrid
+  const columns: DataGridColumn<APIKey>[] = useMemo(() => [
+    {
+      id: 'name',
+      label: texts.name,
+      field: 'key_name',
+      sortable: true,
+      filterable: true,
+      filterType: 'text',
+      minWidth: '200px',
+      render: (value: string, row: APIKey) => (
+        <div>
+          <div style={{ fontWeight: 600, marginBottom: '4px' }}>{value}</div>
+          {row.owner_name && (
+            <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+              {texts.owner}: {row.owner_name}
+            </div>
+          )}
+        </div>
+      )
+    },
+    {
+      id: 'prefix',
+      label: texts.keyPrefix,
+      field: 'api_key_prefix',
+      sortable: true,
+      filterable: true,
+      filterType: 'text',
+      width: '150px',
+      render: (value: string) => (
+        <code style={{ fontFamily: 'monospace', fontSize: '0.85rem', background: 'var(--background-color)', padding: '2px 6px', borderRadius: '4px' }}>
+          {value}
+        </code>
+      )
+    },
+    {
+      id: 'type',
+      label: texts.type,
+      field: 'app_type',
+      sortable: true,
+      filterable: true,
+      filterType: 'select',
+      filterOptions: [
+        { value: 'integration', label: texts.typeIntegration },
+        { value: 'mobile', label: texts.typeMobile },
+        { value: 'web', label: texts.typeWeb },
+        { value: 'service', label: texts.typeService },
+        { value: 'bot', label: texts.typeBot }
+      ],
+      width: '120px',
+      render: (value: string) => (
+        <span
+          className="method-badge"
+          style={{ 
+            backgroundColor: getTypeColor(value),
+            color: 'white',
+            padding: '0.25rem 0.75rem',
+            borderRadius: '4px',
+            fontSize: '0.85rem',
+            fontWeight: 600
+          }}
+        >
+          {getTypeText(value)}
+        </span>
+      )
+    },
+    {
+      id: 'status',
+      label: texts.status,
+      field: 'status',
+      sortable: true,
+      filterable: true,
+      filterType: 'select',
+      filterOptions: [
+        { value: 'active', label: texts.statusActive },
+        { value: 'suspended', label: texts.statusSuspended },
+        { value: 'revoked', label: texts.statusRevoked },
+        { value: 'expired', label: texts.statusExpired }
+      ],
+      width: '100px',
+      render: (value: string) => (
+        <span className={`status-badge ${getStatusClass(value)}`}>
+          {getStatusText(value)}
+        </span>
+      )
+    },
+    {
+      id: 'created',
+      label: texts.created,
+      field: 'created_at',
+      sortable: true,
+      filterable: false,
+      width: '180px',
+      render: (value: string) => (
+        <span style={{ fontSize: '0.85rem' }}>
+          {formatDate(value)}
+        </span>
+      )
+    },
+    {
+      id: 'lastUsed',
+      label: texts.lastUsed,
+      field: 'last_used_at',
+      sortable: true,
+      filterable: false,
+      width: '180px',
+      render: (value: string | null) => (
+        <span style={{ fontSize: '0.85rem', color: value ? 'inherit' : 'var(--text-secondary)' }}>
+          {formatDate(value)}
+        </span>
+      )
+    },
+    {
+      id: 'requests',
+      label: texts.requests,
+      field: 'total_requests_count',
+      sortable: true,
+      filterable: false,
+      width: '100px',
+      render: (value: number) => value.toLocaleString()
+    },
+    {
+      id: 'rateLimit',
+      label: texts.rateLimit,
+      field: 'rate_limit_per_minute',
+      sortable: true,
+      filterable: false,
+      width: '120px',
+      render: (value: number) => `${value}${texts.perMinute}`
+    },
+    {
+      id: 'actions',
+      label: texts.actions,
+      field: 'id',
+      sortable: false,
+      filterable: false,
+      width: '140px',
+      render: (_: any, row: APIKey) => (
+        <div className="action-buttons">
+          <button
+            className="view-details-btn"
+            onClick={(e) => {
+              e.stopPropagation();
+              alert(`${texts.viewDetails} - ${row.key_name}`);
+            }}
+            title={texts.viewDetails}
+          >
+            👁️
+          </button>
+          {row.status === 'active' && (
+            <button
+              className="view-details-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleRevoke(row.id, row.key_name);
+              }}
+              title={texts.revoke}
+            >
+              🚫
+            </button>
+          )}
+          <button
+            className="view-details-btn"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDelete(row.id, row.key_name);
+            }}
+            title={texts.delete}
+          >
+            🗑️
+          </button>
+        </div>
+      )
+    }
+  ], [language, texts]);
+
+  // Toolbar content
+  const toolbarContent = (
+    <div className="toolbar-actions">
+      <button className="pagination-btn" onClick={handleCreateKey}>
+        ➕ {texts.createKey}
+      </button>
+    </div>
+  );
+
+  if (error) {
+    return (
+      <div className={`api-key-management ${theme}`}>
+        <div className="logs-header">
+          <h1 className="logs-title">🔐 {texts.title}</h1>
+          <p className="logs-subtitle">{texts.subtitle}</p>
+        </div>
+        <div className="error-container">
+          <span className="error-icon">⚠️</span>
+          <p>{error}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className={`api-key-management ${theme}`} dir={language === 'he' || language === 'ar' ? 'rtl' : 'ltr'}>
+    <div className={`api-key-management ${theme}`}>
       <div className="logs-header">
         <h1 className="logs-title">🔐 {texts.title}</h1>
         <p className="logs-subtitle">{texts.subtitle}</p>
       </div>
 
-      <div className="toolbar">
-        <div className="filter-group">
-          <label>{texts.status}:</label>
-          <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="filter-select">
-            <option value="all">{texts.statusAll}</option>
-            <option value="active">{texts.statusActive}</option>
-            <option value="suspended">{texts.statusSuspended}</option>
-            <option value="revoked">{texts.statusRevoked}</option>
-            <option value="expired">{texts.statusExpired}</option>
-          </select>
-        </div>
-        <button className="pagination-btn" onClick={handleCreateKey}>
-          ➕ {texts.createKey}
-        </button>
-      </div>
-
-      {loading && (
+      {loading ? (
         <div className="loading-container">
           <div className="loading-spinner"></div>
           <p>{texts.loading}</p>
         </div>
-      )}
-
-      {error && (
-        <div className="error-container">
-          <span className="error-icon">⚠️</span>
-          <p>{error}</p>
-        </div>
-      )}
-
-      {!loading && !error && (
-        <div className="logs-table-wrapper">
-          {apiKeys.length === 0 ? (
-            <div className="no-logs-container">
-              <span className="no-logs-icon">🔑</span>
-              <p>{texts.noKeys}</p>
-              <button className="pagination-btn" onClick={handleCreateKey}>
-                {texts.createFirst}
-              </button>
-            </div>
-          ) : (
-            <table className="logs-table">
-              <thead>
-                <tr>
-                  <th>{texts.name}</th>
-                  <th>{texts.keyPrefix}</th>
-                  <th>{texts.type}</th>
-                  <th>{texts.status}</th>
-                  <th>{texts.created}</th>
-                  <th>{texts.lastUsed}</th>
-                  <th>{texts.requests}</th>
-                  <th>{texts.rateLimit}</th>
-                  <th>{texts.actions}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {apiKeys.map(key => (
-                  <tr key={key.id}>
-                    <td>
-                      <div className="key-name">{key.key_name}</div>
-                      {key.owner_name && <div className="key-owner">{texts.owner}: {key.owner_name}</div>}
-                    </td>
-                    <td>
-                      <code className="endpoint-cell">{key.api_key_prefix}</code>
-                    </td>
-                    <td>
-                      <span className={`method-badge type-${key.app_type}`}>
-                        {getTypeText(key.app_type)}
-                      </span>
-                    </td>
-                    <td>
-                      <span className={`status-badge ${getStatusClass(key.status)}`}>
-                        {getStatusText(key.status)}
-                      </span>
-                    </td>
-                    <td className="timestamp-cell">{formatDate(key.created_at)}</td>
-                    <td className="timestamp-cell">{formatDate(key.last_used_at)}</td>
-                    <td>{key.total_requests_count.toLocaleString()}</td>
-                    <td>{key.rate_limit_per_minute}{texts.perMinute}</td>
-                    <td>
-                      <div className="action-buttons">
-                        <button
-                          className="view-details-btn"
-                          onClick={() => alert(`${texts.viewDetails} - ${key.key_name}`)}
-                          title={texts.viewDetails}
-                        >
-                          👁️
-                        </button>
-                        {key.status === 'active' && (
-                          <button
-                            className="view-details-btn"
-                            onClick={() => handleRevoke(key.id, key.key_name)}
-                            title={texts.revoke}
-                          >
-                            🚫
-                          </button>
-                        )}
-                        <button
-                          className="view-details-btn"
-                          onClick={() => handleDelete(key.id, key.key_name)}
-                          title={texts.delete}
-                        >
-                          🗑️
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
+      ) : (
+        <DataGrid
+          columns={columns}
+          data={apiKeys}
+          keyField="id"
+          language={language}
+          theme={theme}
+          persistStateKey="api-keys-grid"
+          emptyMessage={texts.noKeys}
+          height="calc(100vh - 280px)"
+          stickyHeader={true}
+          toolbarContent={toolbarContent}
+        />
       )}
 
       {showCreateModal && (
         <CreateAPIKeyModal
-          language={language}
-          theme={theme}
           texts={texts}
           onClose={() => setShowCreateModal(false)}
           onSuccess={(response) => {
@@ -423,8 +535,6 @@ export const APIKeyManagement = ({ language = 'he', theme = 'light' }: APIKeyMan
 
       {newKeyResponse && (
         <NewKeyDisplayModal
-          language={language}
-          theme={theme}
           texts={texts}
           keyData={newKeyResponse}
           onClose={() => setNewKeyResponse(null)}
@@ -436,8 +546,6 @@ export const APIKeyManagement = ({ language = 'he', theme = 'light' }: APIKeyMan
 
 // Create API Key Modal
 interface CreateAPIKeyModalProps {
-  language: string;
-  theme: string;
   texts: any;
   onClose: () => void;
   onSuccess: (response: NewAPIKeyResponse) => void;
@@ -642,8 +750,6 @@ const CreateAPIKeyModal = ({ texts, onClose, onSuccess }: CreateAPIKeyModalProps
 
 // New Key Display Modal
 interface NewKeyDisplayModalProps {
-  language: string;
-  theme: string;
   texts: any;
   keyData: NewAPIKeyResponse;
   onClose: () => void;

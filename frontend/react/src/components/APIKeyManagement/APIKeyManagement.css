@@ -1,6 +1,6 @@
 /**
  * API Key Management Styles
- * Based on APILogs theme system
+ * Uses DataGrid component - minimal custom styles
  */
 
 .api-key-management {
@@ -27,123 +27,33 @@
   --hover-bg: #f0f3f6;
 }
 
-/* Toolbar */
-.api-key-management .toolbar {
+/* Toolbar Actions */
+.toolbar-actions {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem;
-  background: var(--card-background);
-  border-radius: 12px;
-  border: 2px solid var(--border-color);
-  margin-bottom: 1.5rem;
-  flex-wrap: wrap;
   gap: 1rem;
-}
-
-.api-key-management .filter-group {
-  display: flex;
   align-items: center;
-  gap: 0.5rem;
-}
-
-.api-key-management .filter-group label {
-  color: var(--text-primary);
-  font-weight: 500;
-}
-
-.api-key-management .filter-select {
-  padding: 0.5rem 1rem;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  background: var(--background-color);
-  color: var(--text-primary);
-  cursor: pointer;
-  font-size: 1rem;
-}
-
-/* Buttons */
-.api-key-management .pagination-btn {
-  background: #2563eb;
-  color: white;
-  border: none;
-  padding: 0.6rem 1.2rem;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
-}
-
-.api-key-management .pagination-btn:hover:not(:disabled) {
-  background: #1d4ed8;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
-}
-
-.api-key-management .pagination-btn:disabled {
-  background: var(--border-color);
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
-/* Key name and owner */
-.key-name {
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 4px;
-}
-
-.key-owner {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-}
-
-/* Type badges */
-.method-badge.type-integration {
-  background: #3b82f6;
-  color: white;
-}
-
-.method-badge.type-mobile {
-  background: #8b5cf6;
-  color: white;
-}
-
-.method-badge.type-web {
-  background: #10b981;
-  color: white;
-}
-
-.method-badge.type-service {
-  background: #f59e0b;
-  color: white;
-}
-
-.method-badge.type-bot {
-  background: #ec4899;
-  color: white;
 }
 
 /* Status badges */
+.status-badge {
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
 .status-badge.status-active {
   color: #10b981;
-  font-weight: 600;
 }
 
 .status-badge.status-suspended {
   color: #f59e0b;
-  font-weight: 600;
 }
 
 .status-badge.status-revoked {
   color: #ef4444;
-  font-weight: 600;
 }
 
 .status-badge.status-expired {
   color: #6b7280;
-  font-weight: 600;
 }
 
 /* Action buttons */
@@ -302,11 +212,11 @@
   flex-direction: row-reverse;
 }
 
-[dir="rtl"] .filter-group {
+[dir="rtl"] .modal-footer {
   flex-direction: row-reverse;
 }
 
-[dir="rtl"] .modal-footer {
+[dir="rtl"] .toolbar-actions {
   flex-direction: row-reverse;
 }
 
@@ -314,15 +224,6 @@
 @media (max-width: 768px) {
   .api-key-management {
     padding: 1rem;
-  }
-
-  .toolbar {
-    flex-direction: column;
-    align-items: stretch !important;
-  }
-
-  .filter-group {
-    justify-content: space-between;
   }
 
   .form-row {

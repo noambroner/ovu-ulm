@@ -3,6 +3,7 @@
 Run user preferences migration using app's database connection
 """
 import sys
+import asyncio
 from pathlib import Path
 
 # Add the app directory to the path
@@ -11,7 +12,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from app.core.database import engine
 from sqlalchemy import text
 
-def run_migration():
+async def run_migration():
     """Run the preferences migration"""
     print("🚀 Running user preferences migration...")
     
@@ -25,16 +26,15 @@ def run_migration():
         migration_sql = f.read()
     
     try:
-        with engine.connect() as conn:
+        async with engine.begin() as conn:
             # Execute the entire migration as one transaction
-            conn.execute(text(migration_sql))
-            conn.commit()
+            await conn.execute(text(migration_sql))
         
         print("✅ Migration completed successfully!")
         
         # Verify tables were created
-        with engine.connect() as conn:
-            result = conn.execute(text("""
+        async with engine.connect() as conn:
+            result = await conn.execute(text("""
                 SELECT tablename 
                 FROM pg_tables 
                 WHERE schemaname='public' 
@@ -53,6 +53,6 @@ def run_migration():
         return False
 
 if __name__ == "__main__":
-    success = run_migration()
+    success = asyncio.run(run_migration())
     sys.exit(0 if success else 1)
 

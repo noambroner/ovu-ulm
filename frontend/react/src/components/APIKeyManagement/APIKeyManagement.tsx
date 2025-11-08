@@ -306,10 +306,10 @@ export const APIKeyManagement = ({ language = 'he', theme = 'light' }: APIKeyMan
       filterType: 'text',
       minWidth: '200px',
       render: (value: string, row: APIKey) => (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-          <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>{value}</div>
+        <div className="api-key-name-cell">
+          <div className="api-key-name-primary">{value}</div>
           {row.owner_name && (
-            <div style={{ fontSize: '0.75rem', color: 'var(--dg-text-secondary)', opacity: 0.8 }}>
+            <div className="api-key-name-secondary">
               {texts.owner}: {row.owner_name}
             </div>
           )}
@@ -325,7 +325,7 @@ export const APIKeyManagement = ({ language = 'he', theme = 'light' }: APIKeyMan
       filterType: 'text',
       width: '150px',
       render: (value: string) => (
-        <code style={{ fontFamily: 'monospace', fontSize: '0.8125rem', background: 'rgba(0,0,0,0.05)', padding: '3px 8px', borderRadius: '4px', fontWeight: 500 }}>
+        <code className="api-key-prefix-code">
           {value}
         </code>
       )
@@ -347,16 +347,8 @@ export const APIKeyManagement = ({ language = 'he', theme = 'light' }: APIKeyMan
       width: '120px',
       render: (value: string) => (
         <span
-          className="method-badge"
-          style={{ 
-            backgroundColor: getTypeColor(value),
-            color: 'white',
-            padding: '0.125rem 0.5rem',
-            borderRadius: '4px',
-            fontSize: '0.75rem',
-            fontWeight: 600,
-            display: 'inline-block'
-          }}
+          className="api-key-type-badge"
+          style={{ backgroundColor: getTypeColor(value) }}
         >
           {getTypeText(value)}
         </span>
@@ -377,10 +369,7 @@ export const APIKeyManagement = ({ language = 'he', theme = 'light' }: APIKeyMan
       ],
       width: '100px',
       render: (value: string) => (
-        <span 
-          className={`status-badge ${getStatusClass(value)}`}
-          style={{ fontSize: '0.875rem', fontWeight: 600 }}
-        >
+        <span className={`status-badge ${getStatusClass(value)}`}>
           {getStatusText(value)}
         </span>
       )
@@ -394,7 +383,7 @@ export const APIKeyManagement = ({ language = 'he', theme = 'light' }: APIKeyMan
       filterType: 'text',
       width: '180px',
       render: (value: string) => (
-        <span style={{ fontSize: '0.75rem', color: 'var(--dg-text-secondary)' }}>
+        <span className="api-key-date-text">
           {formatDate(value)}
         </span>
       )
@@ -408,7 +397,7 @@ export const APIKeyManagement = ({ language = 'he', theme = 'light' }: APIKeyMan
       filterType: 'text',
       width: '180px',
       render: (value: string | null) => (
-        <span style={{ fontSize: '0.75rem', color: value ? 'var(--dg-text-secondary)' : 'var(--text-secondary)' }}>
+        <span className="api-key-date-text" style={{ opacity: value ? 1 : 0.6 }}>
           {formatDate(value)}
         </span>
       )
@@ -422,7 +411,7 @@ export const APIKeyManagement = ({ language = 'he', theme = 'light' }: APIKeyMan
       filterType: 'number',
       width: '100px',
       render: (value: number) => (
-        <span style={{ fontWeight: 500 }}>
+        <span className="api-key-number-text">
           {value.toLocaleString()}
         </span>
       )

@@ -53,24 +53,26 @@
 }
 
 /* Status badges */
-.status-badge {
+.api-key-management .status-badge {
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: 0.875rem;
+  line-height: 1;
+  display: inline-block;
 }
 
-.status-badge.status-active {
+.api-key-management .status-badge.status-active {
   color: #10b981;
 }
 
-.status-badge.status-suspended {
+.api-key-management .status-badge.status-suspended {
   color: #f59e0b;
 }
 
-.status-badge.status-revoked {
+.api-key-management .status-badge.status-revoked {
   color: #ef4444;
 }
 
-.status-badge.status-expired {
+.api-key-management .status-badge.status-expired {
   color: #6b7280;
 }
 

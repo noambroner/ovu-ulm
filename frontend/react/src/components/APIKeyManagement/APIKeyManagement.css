@@ -47,8 +47,10 @@
 
 /* Fix row height - override DataGrid default */
 .api-key-management .data-grid-table td {
+  max-height: 3rem;
+  overflow: hidden;
   height: auto !important;
-  padding: 0.5rem 0.75rem !important;
+  padding: 0.75rem 1rem !important;
   line-height: 1.4 !important;
   vertical-align: middle;
 }
@@ -94,20 +96,32 @@
 /* Table cell content styles */
 .api-key-name-cell {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  flex-direction: row;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: nowrap;
+  line-height: 1.4;
+  max-height: 1.5rem;
+  overflow: hidden;
 }
 
 .api-key-name-primary {
   font-weight: 600;
   font-size: 0.875rem;
   color: var(--dg-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .api-key-name-secondary {
   font-size: 0.75rem;
   color: var(--dg-text-secondary);
-  opacity: 0.8;
+  opacity: 0.7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 400;
 }
 
 .api-key-prefix-code {

@@ -577,10 +577,35 @@ const CreateAPIKeyModal = ({ texts, onClose, onSuccess }: CreateAPIKeyModalProps
       return;
     }
 
+    // Clean up formData - remove empty strings and null values
+    const cleanedData: any = {
+      key_name: formData.key_name.trim(),
+      app_type: formData.app_type,
+      scopes: formData.scopes || [],
+      rate_limit_per_minute: formData.rate_limit_per_minute || 60,
+      rate_limit_per_hour: formData.rate_limit_per_hour || 1000,
+      rate_limit_per_day: formData.rate_limit_per_day || 10000,
+    };
+    
+    // Only include optional fields if they have values
+    if (formData.owner_name && formData.owner_name.trim()) {
+      cleanedData.owner_name = formData.owner_name.trim();
+    }
+    if (formData.owner_email && formData.owner_email.trim()) {
+      cleanedData.owner_email = formData.owner_email.trim();
+    }
+    if (formData.description && formData.description.trim()) {
+      cleanedData.description = formData.description.trim();
+    }
+    if (formData.expires_in_days !== null && formData.expires_in_days !== undefined) {
+      cleanedData.expires_in_days = formData.expires_in_days;
+    }
+
     try {
       setLoading(true);
       setError(null);
-      const response = await api.post('/api/v1/api-keys', formData);
+      console.log('Sending cleanedData:', JSON.stringify(cleanedData, null, 2));
+      const response = await api.post('/api/v1/api-keys', cleanedData);
       onSuccess(response.data);
       onClose();
     } catch (err: any) {

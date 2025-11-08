@@ -135,7 +135,8 @@ export const UsersTable = ({ language, apiEndpoint, token }: UsersTableProps) =>
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'X-App-Source': 'ulm-react-web'  // Identify as UI request
         }
       });
       
@@ -163,6 +164,7 @@ export const UsersTable = ({ language, apiEndpoint, token }: UsersTableProps) =>
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
+          'X-App-Source': 'ulm-react-web'  // Identify as UI request
         },
         body: JSON.stringify({
           deactivation_type: type,
@@ -187,6 +189,7 @@ export const UsersTable = ({ language, apiEndpoint, token }: UsersTableProps) =>
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
+          'X-App-Source': 'ulm-react-web'  // Identify as UI request
         },
         body: JSON.stringify({ reason: 'Reactivated by admin' }),
       });
@@ -206,6 +209,7 @@ export const UsersTable = ({ language, apiEndpoint, token }: UsersTableProps) =>
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
+          'X-App-Source': 'ulm-react-web'  // Identify as UI request
         },
         body: JSON.stringify({ reason: 'Cancelled by admin' }),
       });
@@ -420,7 +424,8 @@ export const UsersTable = ({ language, apiEndpoint, token }: UsersTableProps) =>
                 method: 'POST',
                 headers: {
                   'Authorization': `Bearer ${token}`,
-                  'Content-Type': 'application/json'
+                  'Content-Type': 'application/json',
+                  'X-App-Source': 'ulm-react-web'  // Identify as UI request
                 },
                 body: JSON.stringify(newUser)
               });

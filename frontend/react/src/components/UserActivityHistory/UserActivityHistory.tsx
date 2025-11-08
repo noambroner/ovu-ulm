@@ -75,7 +75,8 @@ export const UserActivityHistory: React.FC<UserActivityHistoryProps> = ({
         {
           headers: {
             'Authorization': `Bearer ${authToken}`,
-            'Accept': 'application/json'
+            'Accept': 'application/json',
+            'X-App-Source': 'ulm-react-web'  // Identify as UI request
           }
         }
       );

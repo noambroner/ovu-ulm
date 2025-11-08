@@ -7,6 +7,8 @@
   padding: 2rem;
   min-height: 100vh;
   background: var(--background-color);
+  width: 100%;
+  overflow-x: hidden;
 }
 
 .api-key-management.dark {
@@ -25,6 +27,22 @@
   --text-secondary: #7f8c8d;
   --border-color: #e1e8ed;
   --hover-bg: #f0f3f6;
+}
+
+/* Override DataGrid for this component */
+.api-key-management .data-grid {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.api-key-management .data-grid-table-wrapper {
+  overflow-x: auto;
+  width: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+
+.api-key-management .data-grid table {
+  min-width: 1200px;
 }
 
 /* Toolbar Actions */
@@ -61,6 +79,56 @@
   display: flex;
   gap: 0.5rem;
   justify-content: center;
+}
+
+/* Table cell content styles */
+.api-key-name-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.api-key-name-primary {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--dg-text-primary);
+}
+
+.api-key-name-secondary {
+  font-size: 0.75rem;
+  color: var(--dg-text-secondary);
+  opacity: 0.8;
+}
+
+.api-key-prefix-code {
+  font-family: monospace;
+  font-size: 0.8125rem;
+  background: rgba(0, 0, 0, 0.05);
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.api-key-management.dark .api-key-prefix-code {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.api-key-type-badge {
+  padding: 0.125rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: inline-block;
+  color: white;
+}
+
+.api-key-date-text {
+  font-size: 0.75rem;
+  color: var(--dg-text-secondary);
+}
+
+.api-key-number-text {
+  font-weight: 500;
 }
 
 /* Modal styles */
@@ -220,10 +288,42 @@
   flex-direction: row-reverse;
 }
 
+/* Tablet Responsive */
+@media (max-width: 1024px) {
+  .api-key-management {
+    padding: 1.5rem;
+  }
+  
+  .api-key-management .data-grid table {
+    min-width: 1000px;
+  }
+  
+  .logs-title {
+    font-size: 2rem;
+  }
+}
+
 /* Mobile Responsive */
 @media (max-width: 768px) {
   .api-key-management {
     padding: 1rem;
+    overflow-x: auto;
+  }
+  
+  .api-key-management .data-grid table {
+    min-width: 900px;
+  }
+  
+  .logs-header {
+    padding: 1rem;
+  }
+  
+  .logs-title {
+    font-size: 1.75rem;
+  }
+  
+  .logs-subtitle {
+    font-size: 0.9rem;
   }
 
   .form-row {
@@ -240,5 +340,29 @@
 
   .key-value .pagination-btn {
     width: 100%;
+  }
+  
+  .toolbar-actions {
+    flex-wrap: wrap;
+  }
+}
+
+/* Small Mobile */
+@media (max-width: 480px) {
+  .api-key-management {
+    padding: 0.5rem;
+  }
+  
+  .api-key-management .data-grid table {
+    min-width: 800px;
+  }
+  
+  .logs-title {
+    font-size: 1.5rem;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    gap: 0.25rem;
   }
 }

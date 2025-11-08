@@ -192,7 +192,7 @@ export const APIKeyManagement = ({ language = 'he', theme = 'light' }: APIKeyMan
     }
   };
 
-  const texts = t[language];
+  const texts = t[language] || t['he'];
   
   // Load API keys
   const loadAPIKeys = async () => {
@@ -443,7 +443,7 @@ interface CreateAPIKeyModalProps {
   onSuccess: (response: NewAPIKeyResponse) => void;
 }
 
-const CreateAPIKeyModal = ({ language, theme, texts, onClose, onSuccess }: CreateAPIKeyModalProps) => {
+const CreateAPIKeyModal = ({ texts, onClose, onSuccess }: CreateAPIKeyModalProps) => {
   const [formData, setFormData] = useState({
     key_name: '',
     app_type: 'integration',
@@ -649,7 +649,7 @@ interface NewKeyDisplayModalProps {
   onClose: () => void;
 }
 
-const NewKeyDisplayModal = ({ language, theme, texts, keyData, onClose }: NewKeyDisplayModalProps) => {
+const NewKeyDisplayModal = ({ texts, keyData, onClose }: NewKeyDisplayModalProps) => {
   const [copied, setCopied] = useState(false);
 
   const copyToClipboard = () => {

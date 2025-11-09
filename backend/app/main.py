@@ -9,7 +9,8 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 import logging
-import time
+import time as time_module
+import time as time_module
 
 from app.core.config import settings
 from app.core.database import init_db, close_db
@@ -115,9 +116,9 @@ async def add_request_id(request: Request, call_next):
     request_id = str(uuid.uuid4())
     request.state.request_id = request_id
     
-    start_time = time.time()
+    start_time = time_module.time()
     response = await call_next(request)
-    process_time = time.time() - start_time
+    process_time = time_module.time() - start_time
     
     response.headers["X-Request-ID"] = request_id
     response.headers["X-Process-Time"] = str(process_time)
@@ -157,8 +158,9 @@ async def add_cache_control_headers(request: Request, call_next):
     response.headers["Expires"] = "0"
     
     # Add ETag header with timestamp for cache busting
-    import time
-    response.headers["ETag"] = f'"{int(time.time())}"'
+    import time as time_module
+import time as time_module
+    response.headers["ETag"] = f'"{int(time_module.time())}"'
     
     return response
 

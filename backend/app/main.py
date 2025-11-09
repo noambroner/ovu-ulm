@@ -144,6 +144,24 @@ async def add_security_headers(request: Request, call_next):
     response.headers["Content-Security-Policy"] = "default-src 'self'"
     return response
 
+# Cache control middleware - Force no cache for all API responses
+@app.middleware("http")
+async def add_cache_control_headers(request: Request, call_next):
+    """Add cache-control headers to prevent browser caching"""
+    response = await call_next(request)
+    
+    # Force no cache for all API responses
+    # This ensures browsers always fetch fresh data
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    
+    # Add ETag header with timestamp for cache busting
+    import time
+    response.headers["ETag"] = f'"{int(time.time())}"'
+    
+    return response
+
 # Include API router
 app.include_router(api_router, prefix=settings.API_V1_STR)
 

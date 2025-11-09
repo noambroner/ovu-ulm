@@ -5,7 +5,8 @@ API endpoints for managing user DataGrid preferences and search history.
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from typing import List, Optional
 from pydantic import BaseModel
 from datetime import datetime
@@ -63,7 +64,7 @@ class SearchHistoryResponse(BaseModel):
 async def get_user_preferences(
     datagrid_key: str,
     current_user: dict = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Get user preferences for a specific DataGrid.
@@ -72,10 +73,13 @@ async def get_user_preferences(
     """
     user_id = current_user['id']
     
-    pref = db.query(UserDataGridPreference).filter(
-        UserDataGridPreference.user_id == user_id,
-        UserDataGridPreference.datagrid_key == datagrid_key
-    ).first()
+    result = await db.execute(
+        select(UserDataGridPreference).where(
+            UserDataGridPreference.user_id == user_id,
+            UserDataGridPreference.datagrid_key == datagrid_key
+        )
+    )
+    pref = result.scalar_one_or_none()
     
     if not pref:
         return None
@@ -92,7 +96,7 @@ async def save_user_preferences(
     datagrid_key: str,
     preferences: PreferencesData,
     current_user: dict = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Save or update user preferences for a DataGrid.
@@ -102,10 +106,13 @@ async def save_user_preferences(
     user_id = current_user['id']
     
     # Check if preferences exist
-    pref = db.query(UserDataGridPreference).filter(
-        UserDataGridPreference.user_id == user_id,
-        UserDataGridPreference.datagrid_key == datagrid_key
-    ).first()
+    result = await db.execute(
+        select(UserDataGridPreference).where(
+            UserDataGridPreference.user_id == user_id,
+            UserDataGridPreference.datagrid_key == datagrid_key
+        )
+    )
+    pref = result.scalar_one_or_none()
     
     if pref:
         # Update existing
@@ -120,8 +127,8 @@ async def save_user_preferences(
         )
         db.add(pref)
     
-    db.commit()
-    db.refresh(pref)
+    await db.commit()
+    await db.refresh(pref)
     
     return {
         "message": "Preferences saved successfully",
@@ -134,25 +141,29 @@ async def save_user_preferences(
 async def delete_user_preferences(
     datagrid_key: str,
     current_user: dict = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Delete user preferences for a DataGrid.
     """
     user_id = current_user['id']
     
-    deleted = db.query(UserDataGridPreference).filter(
-        UserDataGridPreference.user_id == user_id,
-        UserDataGridPreference.datagrid_key == datagrid_key
-    ).delete()
+    result = await db.execute(
+        select(UserDataGridPreference).where(
+            UserDataGridPreference.user_id == user_id,
+            UserDataGridPreference.datagrid_key == datagrid_key
+        )
+    )
+    pref = result.scalar_one_or_none()
     
-    db.commit()
-    
-    if deleted == 0:
+    if not pref:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Preferences not found"
         )
+    
+    await db.delete(pref)
+    await db.commit()
     
     return {"message": "Preferences deleted successfully"}
 
@@ -166,7 +177,7 @@ async def get_search_history(
     datagrid_key: str,
     limit: int = 100,
     current_user: dict = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Get search history for a DataGrid.
@@ -176,12 +187,15 @@ async def get_search_history(
     user_id = current_user['id']
     limit = min(limit, 100)  # Cap at 100
     
-    history = db.query(UserSearchHistory).filter(
-        UserSearchHistory.user_id == user_id,
-        UserSearchHistory.datagrid_key == datagrid_key
-    ).order_by(
-        UserSearchHistory.created_at.desc()
-    ).limit(limit).all()
+    result = await db.execute(
+        select(UserSearchHistory).where(
+            UserSearchHistory.user_id == user_id,
+            UserSearchHistory.datagrid_key == datagrid_key
+        ).order_by(
+            UserSearchHistory.created_at.desc()
+        ).limit(limit)
+    )
+    history = result.scalars().all()
     
     return [
         {
@@ -199,7 +213,7 @@ async def add_search_history(
     datagrid_key: str,
     data: SearchHistoryCreate,
     current_user: dict = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Add a new search to history.
@@ -215,8 +229,8 @@ async def add_search_history(
     )
     
     db.add(history)
-    db.commit()
-    db.refresh(history)
+    await db.commit()
+    await db.refresh(history)
     
     return {
         "message": "Search saved to history",
@@ -229,7 +243,7 @@ async def add_search_history(
 async def delete_search_history(
     history_id: int,
     current_user: dict = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Delete a specific search history entry.
@@ -238,18 +252,22 @@ async def delete_search_history(
     """
     user_id = current_user['id']
     
-    deleted = db.query(UserSearchHistory).filter(
-        UserSearchHistory.id == history_id,
-        UserSearchHistory.user_id == user_id
-    ).delete()
+    result = await db.execute(
+        select(UserSearchHistory).where(
+            UserSearchHistory.id == history_id,
+            UserSearchHistory.user_id == user_id
+        )
+    )
+    history = result.scalar_one_or_none()
     
-    db.commit()
-    
-    if deleted == 0:
+    if not history:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Search history not found or not authorized"
         )
+    
+    await db.delete(history)
+    await db.commit()
     
     return {"message": "Search history deleted successfully"}
 

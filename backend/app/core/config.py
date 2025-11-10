@@ -36,7 +36,7 @@ class Settings(BaseSettings):
     PASSWORD_RESET_RATE_LIMIT: str = "3/hour"
     
     # Database
-    DATABASE_URL: str = "postgresql+asyncpg://postgres:password@localhost/ulm_db"
+    DATABASE_URL: str = "postgresql+asyncpg://ovu_user:Ovu123456%21%21%40%40%23%23@localhost/ulm_db"
     DATABASE_POOL_SIZE: int = 20
     DATABASE_MAX_OVERFLOW: int = 40
     DATABASE_POOL_TIMEOUT: int = 30

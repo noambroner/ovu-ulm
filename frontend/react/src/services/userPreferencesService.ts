@@ -57,8 +57,12 @@ export const getUserPreferences = async (
       `${API_BASE}/preferences/${datagridKey}`
     );
     return response.data?.preferences || null;
-  } catch (error) {
-    console.error('Failed to load preferences from server:', error);
+  } catch (error: any) {
+    // Don't log 401/403 errors - they're expected when not authenticated
+    // The system will fallback to localStorage seamlessly
+    if (error.response?.status !== 401 && error.response?.status !== 403) {
+      console.error('Failed to load preferences from server:', error);
+    }
     // Fallback to localStorage
     return loadFromLocalStorage(datagridKey);
   }
@@ -74,8 +78,12 @@ export const saveUserPreferences = async (
   try {
     await axios.put(`${API_BASE}/preferences/${datagridKey}`, preferences);
     console.log(`Preferences saved to server: ${datagridKey}`);
-  } catch (error) {
-    console.error('Failed to save preferences to server:', error);
+  } catch (error: any) {
+    // Don't log 401/403 errors - they're expected when not authenticated
+    // The system will fallback to localStorage seamlessly
+    if (error.response?.status !== 401 && error.response?.status !== 403) {
+      console.error('Failed to save preferences to server:', error);
+    }
     // Fallback to localStorage
     saveToLocalStorage(datagridKey, preferences);
   }
@@ -114,8 +122,11 @@ export const getSearchHistory = async (
       { params: { limit } }
     );
     return response.data || [];
-  } catch (error) {
-    console.error('Failed to load search history:', error);
+  } catch (error: any) {
+    // Don't log 401/403 errors - they're expected when not authenticated
+    if (error.response?.status !== 401 && error.response?.status !== 403) {
+      console.error('Failed to load search history:', error);
+    }
     return [];
   }
 };
@@ -136,8 +147,11 @@ export const addSearchHistory = async (
       }
     });
     console.log('Search saved to history');
-  } catch (error) {
-    console.error('Failed to save search history:', error);
+  } catch (error: any) {
+    // Don't log 401/403 errors - they're expected when not authenticated
+    if (error.response?.status !== 401 && error.response?.status !== 403) {
+      console.error('Failed to save search history:', error);
+    }
   }
 };
 

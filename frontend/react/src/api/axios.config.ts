@@ -54,6 +54,16 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
     
+    // CRITICAL: Don't try to refresh if the failing request IS the refresh endpoint!
+    // This prevents infinite loops when refresh token is also invalid
+    if (originalRequest.url?.includes('/auth/refresh')) {
+      // Refresh endpoint failed, clear tokens and logout
+      localStorage.removeItem('ulm_token');
+      localStorage.removeItem('ulm_refresh_token');
+      window.dispatchEvent(new CustomEvent('auth:logout'));
+      return Promise.reject(error);
+    }
+    
     // If error is 401 and we haven't tried to refresh yet
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {

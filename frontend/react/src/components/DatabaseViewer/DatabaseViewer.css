@@ -149,26 +149,26 @@
 .tables-list {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 .table-item {
   background: var(--background-color);
-  border: 2px solid var(--border-color);
-  border-radius: 8px;
-  padding: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 0.625rem 0.75rem;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .table-item:hover {
   background: var(--hover-bg);
-  transform: translateX(-5px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transform: translateX(-3px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
 [dir="ltr"] .table-item:hover {
-  transform: translateX(5px);
+  transform: translateX(3px);
 }
 
 .table-item.active {
@@ -180,21 +180,23 @@
 .table-item-name {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.375rem;
   font-weight: 600;
-  margin-bottom: 0.5rem;
-  font-size: 1rem;
+  margin-bottom: 0.25rem;
+  font-size: 0.9rem;
+  line-height: 1.3;
 }
 
 .table-icon {
-  font-size: 1.2rem;
+  font-size: 1rem;
 }
 
 .table-item-info {
   display: flex;
-  gap: 1rem;
-  font-size: 0.85rem;
+  gap: 0.75rem;
+  font-size: 0.75rem;
   color: var(--text-secondary);
+  line-height: 1.4;
 }
 
 .table-item.active .table-item-info {

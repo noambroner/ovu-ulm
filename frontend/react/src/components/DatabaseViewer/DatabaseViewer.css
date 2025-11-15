@@ -112,7 +112,9 @@
 
 .tables-search input {
   width: 100%;
-  padding: 0.375rem 2rem 0.375rem 0.75rem;
+  padding-block: 0.375rem;
+  padding-inline-start: 0.75rem;
+  padding-inline-end: 2rem;
   border: 1px solid var(--border-color);
   border-radius: 4px;
   font-size: 0.8rem;
@@ -120,10 +122,6 @@
   color: var(--text-primary);
   transition: border-color 0.2s ease;
   line-height: 1.4;
-}
-
-[dir="rtl"] .tables-search input {
-  padding: 0.375rem 0.75rem 0.375rem 2rem;
 }
 
 .tables-search input:focus {
@@ -134,8 +132,8 @@
 
 .clear-table-search {
   position: absolute;
-  right: 0.375rem;
-  top: 50%;
+  inset-inline-end: 0.375rem;
+  inset-block-start: 50%;
   transform: translateY(-50%);
   background: none;
   border: none;
@@ -145,11 +143,6 @@
   padding: 0.125rem;
   line-height: 1;
   z-index: 10;
-}
-
-.database-viewer[dir="ltr"] .clear-table-search {
-  right: auto;
-  left: 0.375rem;
 }
 
 .clear-table-search:hover {

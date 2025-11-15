@@ -344,7 +344,8 @@
 
 /* Data Table */
 .table-wrapper {
-  overflow-x: auto;
+  overflow: auto;
+  max-height: 60vh;
   margin-bottom: 1.5rem;
   border: 2px solid var(--border-color);
   border-radius: 8px;
@@ -389,6 +390,7 @@
 
 .data-table tbody tr {
   transition: background-color 0.2s ease;
+  cursor: pointer;
 }
 
 .data-table tbody tr:hover {
@@ -414,6 +416,15 @@
   color: var(--false-color);
 }
 
+.cell-text {
+  display: inline-block;
+  max-width: 420px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+}
+
 /* Pagination */
 .pagination {
   display: flex;
@@ -437,6 +448,114 @@
 }
 
 .pagination-btn {
+  background: var(--active-bg);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: #1d4ed8;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.pagination-btn:disabled {
+  background: var(--border-color);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.page-indicator {
+  color: var(--text-primary);
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.row-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.row-modal {
+  background: var(--card-background);
+  border: 2px solid var(--border-color);
+  border-radius: 16px;
+  width: min(700px, 90%);
+  max-height: 80vh;
+  overflow: auto;
+  padding: 1.5rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.row-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.row-modal-header h3 {
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.row-modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--text-secondary);
+}
+
+.row-modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.row-modal-row {
+  display: flex;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.row-modal-row:last-child {
+  border-bottom: none;
+}
+
+.row-modal-key {
+  flex: 0 0 35%;
+  font-weight: 600;
+  color: var(--text-primary);
+  word-break: break-word;
+}
+
+.row-modal-value {
+  flex: 1;
+  color: var(--text-primary);
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.row-modal-value code {
+  background: var(--background-color);
+  padding: 0.25rem 0.4rem;
+  border-radius: 4px;
+}
+
+
   background: var(--active-bg);
   color: white;
   border: none;

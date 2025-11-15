@@ -32,6 +32,7 @@ interface DatabaseViewerProps {
 }
 
 const ITEMS_PER_PAGE = 50;
+const MAX_CELL_LENGTH = 80;
 
 export const DatabaseViewer = ({ language, theme }: DatabaseViewerProps) => {
   const [tables, setTables] = useState<TableInfo[]>([]);
@@ -44,6 +45,7 @@ export const DatabaseViewer = ({ language, theme }: DatabaseViewerProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [tableListSearch, setTableListSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedRow, setSelectedRow] = useState<any | null>(null);
 
   const t = {
     he: {
@@ -70,7 +72,9 @@ export const DatabaseViewer = ({ language, theme }: DatabaseViewerProps) => {
       tablesCount: 'סה"כ טבלאות',
       filterTables: 'סינון טבלאות...',
       noTables: 'לא נמצאו טבלאות',
-      tableSearchPlaceholder: 'חפש טבלה לפי שם'
+      tableSearchPlaceholder: 'חפש טבלה לפי שם',
+      rowDetails: 'פרטי רשומה',
+      close: 'סגור'
     },
     en: {
       title: 'Database Viewer',
@@ -96,7 +100,9 @@ export const DatabaseViewer = ({ language, theme }: DatabaseViewerProps) => {
       tablesCount: 'Total Tables',
       filterTables: 'Filter tables...',
       noTables: 'No tables found',
-      tableSearchPlaceholder: 'Search table by name'
+      tableSearchPlaceholder: 'Search table by name',
+      rowDetails: 'Row Details',
+      close: 'Close'
     },
     ar: {
       title: 'عارض قاعدة البيانات',
@@ -122,7 +128,9 @@ export const DatabaseViewer = ({ language, theme }: DatabaseViewerProps) => {
       tablesCount: 'إجمالي الجداول',
       filterTables: 'تصفية الجداول...',
       noTables: 'لا توجد جداول',
-      tableSearchPlaceholder: 'ابحث عن جدول بالاسم'
+      tableSearchPlaceholder: 'ابحث عن جدول بالاسم',
+      rowDetails: 'تفاصيل السجل',
+      close: 'إغلاق'
     }
   };
 
@@ -173,6 +181,7 @@ export const DatabaseViewer = ({ language, theme }: DatabaseViewerProps) => {
   const handleTableSelect = (tableName: string) => {
     setSelectedTable(tableName);
     setSearchTerm('');
+    setSelectedRow(null);
   };
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -236,6 +245,21 @@ export const DatabaseViewer = ({ language, theme }: DatabaseViewerProps) => {
     () => tables.reduce((sum, table) => sum + table.row_count, 0),
     [tables]
   );
+
+  const formatCellValue = (value: any) => {
+    if (value === null || value === undefined) {
+      return { type: 'null', display: 'NULL', full: 'NULL' };
+    }
+    if (typeof value === 'boolean') {
+      return { type: 'boolean', display: value ? '✓' : '✗', full: value ? 'true' : 'false', boolValue: value };
+    }
+    const full = typeof value === 'object' ? JSON.stringify(value) : String(value);
+    const isTruncated = full.length > MAX_CELL_LENGTH;
+    const display = isTruncated ? `${full.slice(0, MAX_CELL_LENGTH)}…` : full;
+    return { type: 'text', display, full };
+  };
+
+  const closeRowModal = () => setSelectedRow(null);
 
   return (
     <div className={`database-viewer ${theme}`} dir={language === 'he' || language === 'ar' ? 'rtl' : 'ltr'}>
@@ -360,20 +384,29 @@ export const DatabaseViewer = ({ language, theme }: DatabaseViewerProps) => {
                       </thead>
                       <tbody>
                         {tableData.data.map((row, rowIndex) => (
-                          <tr key={rowIndex}>
-                            {tableData.columns.map((col) => (
-                              <td key={col}>
-                                {row[col] === null ? (
-                                  <span className="null-value">NULL</span>
-                                ) : typeof row[col] === 'boolean' ? (
-                                  <span className={`bool-value ${row[col] ? 'true' : 'false'}`}>
-                                    {row[col] ? '✓' : '✗'}
-                                  </span>
-                                ) : (
-                                  String(row[col])
-                                )}
-                              </td>
-                            ))}
+                          <tr key={rowIndex} onClick={() => setSelectedRow(row)}>
+                            {tableData.columns.map((col) => {
+                              const cell = formatCellValue(row[col]);
+                              if (cell.type === 'null') {
+                                return (
+                                  <td key={col}>
+                                    <span className="null-value">NULL</span>
+                                  </td>
+                                );
+                              }
+                              if (cell.type === 'boolean') {
+                                return (
+                                  <td key={col} title={cell.full}>
+                                    <span className={`bool-value ${cell.boolValue ? 'true' : 'false'}`}>{cell.display}</span>
+                                  </td>
+                                );
+                              }
+                              return (
+                                <td key={col} title={cell.full}>
+                                  <span className="cell-text">{cell.display}</span>
+                                </td>
+                              );
+                            })}
                           </tr>
                         ))}
                       </tbody>
@@ -383,8 +416,7 @@ export const DatabaseViewer = ({ language, theme }: DatabaseViewerProps) => {
                   <div className="pagination">
                     <div className="pagination-info">
                       {t[language].showing} {tableData.pagination.skip + 1}-
-                      {Math.min(tableData.pagination.skip + tableData.pagination.returned, tableData.pagination.total)}
-                      {' '}
+                      {Math.min(tableData.pagination.skip + tableData.pagination.returned, tableData.pagination.total)}{' '}
                       {t[language].of} {tableData.pagination.total} {t[language].records}
                     </div>
                     <div className="pagination-controls">
@@ -418,6 +450,30 @@ export const DatabaseViewer = ({ language, theme }: DatabaseViewerProps) => {
           )}
         </div>
       </div>
+
+      {selectedRow && tableData && (
+        <div className="row-modal-overlay" onClick={closeRowModal}>
+          <div className="row-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="row-modal-header">
+              <h3>{t[language].rowDetails}</h3>
+              <button className="row-modal-close" onClick={closeRowModal} title={t[language].close}>✕</button>
+            </div>
+            <div className="row-modal-content">
+              {tableData.columns.map((col) => {
+                const cell = formatCellValue(selectedRow[col]);
+                return (
+                  <div key={col} className="row-modal-row">
+                    <span className="row-modal-key">{col}</span>
+                    <span className="row-modal-value">
+                      {cell.type === 'null' ? 'NULL' : cell.full}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

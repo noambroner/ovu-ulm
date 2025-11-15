@@ -9,7 +9,7 @@
  * - Automatic fallback to localStorage if offline
  */
 
-import axios from 'axios';
+import api from '../api/axios.config';
 
 const API_BASE = '/api/v1';
 
@@ -108,7 +108,7 @@ export const getUserPreferences = async (
   }
 
   try {
-    const response = await axios.get<PreferencesResponse | null>(
+    const response = await api.get<PreferencesResponse | null>(
       `${API_BASE}/preferences/${datagridKey}`
     );
     return response.data?.preferences || null;
@@ -140,7 +140,7 @@ export const saveUserPreferences = async (
   }
 
   try {
-    await axios.put(`${API_BASE}/preferences/${datagridKey}`, preferences);
+    await api.put(`${API_BASE}/preferences/${datagridKey}`, preferences);
     console.log(`Preferences saved to server: ${datagridKey}`);
   } catch (error: any) {
     // Don't log 401/403 errors - they're expected when not authenticated
@@ -159,7 +159,7 @@ export const deleteUserPreferences = async (
   datagridKey: string
 ): Promise<void> => {
   try {
-    await axios.delete(`${API_BASE}/preferences/${datagridKey}`);
+    await api.delete(`${API_BASE}/preferences/${datagridKey}`);
     localStorage.removeItem(`datagrid_${datagridKey}`);
     console.log(`Preferences deleted: ${datagridKey}`);
   } catch (error) {
@@ -186,7 +186,7 @@ export const getSearchHistory = async (
   }
 
   try {
-    const response = await axios.get<SearchHistoryEntry[]>(
+    const response = await api.get<SearchHistoryEntry[]>(
       `${API_BASE}/search-history/${datagridKey}`,
       { params: { limit } }
     );
@@ -215,7 +215,7 @@ export const addSearchHistory = async (
   }
 
   try {
-    await axios.post(`${API_BASE}/search-history/${datagridKey}`, {
+    await api.post(`${API_BASE}/search-history/${datagridKey}`, {
       search_data: {
         filters,
         description
@@ -237,7 +237,7 @@ export const deleteSearchHistory = async (
   historyId: number
 ): Promise<void> => {
   try {
-    await axios.delete(`${API_BASE}/search-history/${historyId}`);
+    await api.delete(`${API_BASE}/search-history/${historyId}`);
     console.log(`Search history deleted: ${historyId}`);
   } catch (error) {
     console.error('Failed to delete search history:', error);

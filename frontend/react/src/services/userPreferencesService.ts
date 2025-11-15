@@ -47,13 +47,52 @@ export interface PreferencesResponse {
 // ================================================
 
 /**
- * Check if user is properly authenticated (has both access and refresh tokens)
+ * Check if JWT token is expired (without verifying signature)
+ */
+function isTokenExpired(token: string): boolean {
+  try {
+    // JWT format: header.payload.signature
+    const payload = token.split('.')[1];
+    if (!payload) return true;
+    
+    // Decode base64 payload
+    const decoded = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
+    
+    // Check expiration
+    if (!decoded.exp) return false; // No expiration = valid
+    
+    // exp is in seconds, Date.now() is in milliseconds
+    const expirationTime = decoded.exp * 1000;
+    const now = Date.now();
+    
+    // Add 30 second buffer to avoid edge cases
+    return now >= (expirationTime - 30000);
+  } catch (e) {
+    // If we can't parse, assume expired
+    return true;
+  }
+}
+
+/**
+ * Check if user is properly authenticated (has both access and refresh tokens, and access token is not expired)
  */
 function isUserAuthenticated(): boolean {
   const token = localStorage.getItem('ulm_token');
   const refreshToken = localStorage.getItem('ulm_refresh_token');
-  // Need both tokens for proper authentication
-  return !!(token && refreshToken);
+  
+  // Need both tokens
+  if (!token || !refreshToken) {
+    return false;
+  }
+  
+  // Check if access token is expired
+  // If expired, don't make request - axios interceptor will handle refresh
+  // But we don't want to trigger unnecessary 401/403 errors
+  if (isTokenExpired(token)) {
+    return false;
+  }
+  
+  return true;
 }
 
 /**

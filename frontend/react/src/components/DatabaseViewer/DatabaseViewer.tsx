@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import axios from '../../api/axios.config';
 import './DatabaseViewer.css';
 
@@ -31,21 +31,24 @@ interface DatabaseViewerProps {
   theme: 'light' | 'dark';
 }
 
+const ITEMS_PER_PAGE = 50;
+
 export const DatabaseViewer = ({ language, theme }: DatabaseViewerProps) => {
   const [tables, setTables] = useState<TableInfo[]>([]);
   const [selectedTable, setSelectedTable] = useState<string | null>(null);
   const [tableData, setTableData] = useState<TableData | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [tablesLoading, setTablesLoading] = useState(false);
+  const [tableDataLoading, setTableDataLoading] = useState(false);
+  const [tablesError, setTablesError] = useState<string | null>(null);
+  const [tableDataError, setTableDataError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [tableListSearch, setTableListSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(50);
 
   const t = {
     he: {
       title: 'מציג מסד הנתונים',
       subtitle: 'צפייה וחיפוש בטבלאות מסד הנתונים',
-      selectTable: 'בחר טבלה',
       tablesList: 'רשימת טבלאות',
       search: 'חיפוש...',
       loading: 'טוען נתונים...',
@@ -62,14 +65,16 @@ export const DatabaseViewer = ({ language, theme }: DatabaseViewerProps) => {
       noTableSelected: 'אנא בחר טבלה מהרשימה',
       refresh: 'רענן',
       exportCSV: 'ייצא CSV',
-      tableInfo: 'פרטי טבלה',
-      totalRows: 'סה״כ שורות',
-      clearSearch: 'נקה חיפוש'
+      totalRows: 'סה"כ שורות',
+      clearSearch: 'נקה חיפוש',
+      tablesCount: 'סה"כ טבלאות',
+      filterTables: 'סינון טבלאות...',
+      noTables: 'לא נמצאו טבלאות',
+      tableSearchPlaceholder: 'חפש טבלה לפי שם'
     },
     en: {
       title: 'Database Viewer',
       subtitle: 'View and search database tables',
-      selectTable: 'Select Table',
       tablesList: 'Tables List',
       search: 'Search...',
       loading: 'Loading data...',
@@ -86,14 +91,16 @@ export const DatabaseViewer = ({ language, theme }: DatabaseViewerProps) => {
       noTableSelected: 'Please select a table from the list',
       refresh: 'Refresh',
       exportCSV: 'Export CSV',
-      tableInfo: 'Table Info',
       totalRows: 'Total Rows',
-      clearSearch: 'Clear Search'
+      clearSearch: 'Clear Search',
+      tablesCount: 'Total Tables',
+      filterTables: 'Filter tables...',
+      noTables: 'No tables found',
+      tableSearchPlaceholder: 'Search table by name'
     },
     ar: {
       title: 'عارض قاعدة البيانات',
       subtitle: 'عرض والبحث في جداول قاعدة البيانات',
-      selectTable: 'اختر الجدول',
       tablesList: 'قائمة الجداول',
       search: 'بحث...',
       loading: 'جاري تحميل البيانات...',
@@ -110,9 +117,12 @@ export const DatabaseViewer = ({ language, theme }: DatabaseViewerProps) => {
       noTableSelected: 'الرجاء تحديد جدول من القائمة',
       refresh: 'تحديث',
       exportCSV: 'تصدير CSV',
-      tableInfo: 'معلومات الجدول',
       totalRows: 'إجمالي الصفوف',
-      clearSearch: 'مسح البحث'
+      clearSearch: 'مسح البحث',
+      tablesCount: 'إجمالي الجداول',
+      filterTables: 'تصفية الجداول...',
+      noTables: 'لا توجد جداول',
+      tableSearchPlaceholder: 'ابحث عن جدول بالاسم'
     }
   };
 
@@ -128,40 +138,35 @@ export const DatabaseViewer = ({ language, theme }: DatabaseViewerProps) => {
   }, [selectedTable, searchTerm]);
 
   const fetchTables = async () => {
-    setLoading(true);
-    setError(null);
+    setTablesLoading(true);
+    setTablesError(null);
     try {
       const response = await axios.get('/api/v1/database/tables');
       setTables(response.data.tables || []);
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to fetch tables');
+      setTablesError(err.response?.data?.detail || 'Failed to fetch tables');
     } finally {
-      setLoading(false);
+      setTablesLoading(false);
     }
   };
 
   const fetchTableData = async (tableName: string, page: number, search: string = '') => {
-    setLoading(true);
-    setError(null);
+    setTableDataLoading(true);
+    setTableDataError(null);
     try {
-      const skip = (page - 1) * itemsPerPage;
-      const params: any = {
-        skip,
-        limit: itemsPerPage
-      };
-      
+      const skip = (page - 1) * ITEMS_PER_PAGE;
+      const params: any = { skip, limit: ITEMS_PER_PAGE };
       if (search) {
         params.search = search;
       }
-
       const response = await axios.get(`/api/v1/database/table/${tableName}`, { params });
       setTableData(response.data);
       setCurrentPage(page);
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to fetch table data');
+      setTableDataError(err.response?.data?.detail || 'Failed to fetch table data');
       setTableData(null);
     } finally {
-      setLoading(false);
+      setTableDataLoading(false);
     }
   };
 
@@ -174,6 +179,10 @@ export const DatabaseViewer = ({ language, theme }: DatabaseViewerProps) => {
     setSearchTerm(e.target.value);
   };
 
+  const handleTableListSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTableListSearch(e.target.value);
+  };
+
   const handlePageChange = (newPage: number) => {
     if (selectedTable) {
       fetchTableData(selectedTable, newPage, searchTerm);
@@ -183,6 +192,8 @@ export const DatabaseViewer = ({ language, theme }: DatabaseViewerProps) => {
   const handleRefresh = () => {
     if (selectedTable) {
       fetchTableData(selectedTable, currentPage, searchTerm);
+    } else {
+      fetchTables();
     }
   };
 
@@ -210,8 +221,21 @@ export const DatabaseViewer = ({ language, theme }: DatabaseViewerProps) => {
   };
 
   const totalPages = tableData
-    ? Math.ceil(tableData.pagination.total / itemsPerPage)
+    ? Math.ceil(tableData.pagination.total / ITEMS_PER_PAGE)
     : 0;
+
+  const filteredTables = useMemo(() => {
+    if (!tableListSearch.trim()) {
+      return tables;
+    }
+    const term = tableListSearch.toLowerCase();
+    return tables.filter((table) => table.name.toLowerCase().includes(term));
+  }, [tables, tableListSearch]);
+
+  const totalRowsAcrossTables = useMemo(
+    () => tables.reduce((sum, table) => sum + table.row_count, 0),
+    [tables]
+  );
 
   return (
     <div className={`database-viewer ${theme}`} dir={language === 'he' || language === 'ar' ? 'rtl' : 'ltr'}>
@@ -221,40 +245,57 @@ export const DatabaseViewer = ({ language, theme }: DatabaseViewerProps) => {
       </div>
 
       <div className="viewer-container">
-        {/* Sidebar - Tables List */}
         <div className="tables-sidebar">
           <h2 className="sidebar-title">{t[language].tablesList}</h2>
-          {loading && !tables.length && (
+          <div className="tables-meta">
+            <div className="meta-count"><strong>{tables.length}</strong> {t[language].tablesCount}</div>
+            <div className="meta-count"><strong>{totalRowsAcrossTables.toLocaleString()}</strong> {t[language].totalRows}</div>
+          </div>
+          <div className="tables-search">
+            <input
+              type="text"
+              placeholder={t[language].tableSearchPlaceholder}
+              value={tableListSearch}
+              onChange={handleTableListSearch}
+            />
+            {tableListSearch && (
+              <button className="clear-table-search" onClick={() => setTableListSearch('')}>✕</button>
+            )}
+          </div>
+          {tablesLoading && !tables.length && (
             <div className="loading-message">{t[language].loading}</div>
           )}
-          {error && !tables.length && (
-            <div className="error-message">{t[language].error}: {error}</div>
+          {tablesError && !tables.length && (
+            <div className="error-message">{t[language].error}: {tablesError}</div>
           )}
           <div className="tables-list">
-            {tables.map((table) => (
-              <div
-                key={table.name}
-                className={`table-item ${selectedTable === table.name ? 'active' : ''}`}
-                onClick={() => handleTableSelect(table.name)}
-              >
-                <div className="table-item-name">
-                  <span className="table-icon">🗄️</span>
-                  {table.name}
+            {filteredTables.length === 0 && !tablesLoading ? (
+              <div className="no-tables">{t[language].noTables}</div>
+            ) : (
+              filteredTables.map((table) => (
+                <div
+                  key={table.name}
+                  className={`table-item ${selectedTable === table.name ? 'active' : ''}`}
+                  onClick={() => handleTableSelect(table.name)}
+                >
+                  <div className="table-item-name">
+                    <span className="table-icon">🗄️</span>
+                    {table.name}
+                  </div>
+                  <div className="table-item-info">
+                    <span className="table-stat">
+                      {table.row_count} {t[language].rowCount}
+                    </span>
+                    <span className="table-stat">
+                      {table.columns.length} {t[language].columns}
+                    </span>
+                  </div>
                 </div>
-                <div className="table-item-info">
-                  <span className="table-stat">
-                    {table.row_count} {t[language].rowCount}
-                  </span>
-                  <span className="table-stat">
-                    {table.columns.length} {t[language].columns}
-                  </span>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
 
-        {/* Main Content - Table Data */}
         <div className="table-content">
           {!selectedTable ? (
             <div className="no-selection">
@@ -263,13 +304,12 @@ export const DatabaseViewer = ({ language, theme }: DatabaseViewerProps) => {
             </div>
           ) : (
             <>
-              {/* Toolbar */}
               <div className="content-toolbar">
                 <div className="toolbar-left">
                   <h2 className="selected-table-name">{selectedTable}</h2>
                   {tableData && (
                     <span className="table-info-badge">
-                      {tableData.pagination.total} {t[language].totalRows}
+                      {tableData.pagination.total.toLocaleString()} {t[language].totalRows}
                     </span>
                   )}
                 </div>
@@ -292,25 +332,20 @@ export const DatabaseViewer = ({ language, theme }: DatabaseViewerProps) => {
                       </button>
                     )}
                   </div>
-                  <button className="toolbar-btn" onClick={handleRefresh} title={t[language].refresh}>
-                    🔄
-                  </button>
-                  <button className="toolbar-btn" onClick={exportToCSV} title={t[language].exportCSV}>
-                    📥
-                  </button>
+                  <button className="toolbar-btn" onClick={handleRefresh} title={t[language].refresh}>🔄</button>
+                  <button className="toolbar-btn" onClick={exportToCSV} title={t[language].exportCSV}>📥</button>
                 </div>
               </div>
 
-              {/* Data Table */}
-              {loading ? (
+              {tableDataLoading ? (
                 <div className="loading-container">
                   <div className="loading-spinner"></div>
                   <p>{t[language].loading}</p>
                 </div>
-              ) : error ? (
+              ) : tableDataError ? (
                 <div className="error-container">
                   <span className="error-icon">⚠️</span>
-                  <p>{t[language].error}: {error}</p>
+                  <p>{t[language].error}: {tableDataError}</p>
                 </div>
               ) : tableData && tableData.data.length > 0 ? (
                 <>
@@ -345,11 +380,11 @@ export const DatabaseViewer = ({ language, theme }: DatabaseViewerProps) => {
                     </table>
                   </div>
 
-                  {/* Pagination */}
                   <div className="pagination">
                     <div className="pagination-info">
                       {t[language].showing} {tableData.pagination.skip + 1}-
-                      {Math.min(tableData.pagination.skip + tableData.pagination.returned, tableData.pagination.total)}{' '}
+                      {Math.min(tableData.pagination.skip + tableData.pagination.returned, tableData.pagination.total)}
+                      {' '}
                       {t[language].of} {tableData.pagination.total} {t[language].records}
                     </div>
                     <div className="pagination-controls">
@@ -386,4 +421,3 @@ export const DatabaseViewer = ({ language, theme }: DatabaseViewerProps) => {
     </div>
   );
 };
-

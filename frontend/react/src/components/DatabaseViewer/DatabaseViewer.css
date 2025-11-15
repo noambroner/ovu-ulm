@@ -214,6 +214,8 @@
   border-radius: 12px;
   padding: 1.5rem;
   min-height: 600px;
+  min-width: 0; /* Allow grid item to shrink and enable scrolling */
+  overflow-x: auto; /* Enable horizontal scrolling for the entire content area */
 }
 
 .no-selection {
@@ -351,6 +353,7 @@
   border: 2px solid var(--border-color);
   border-radius: 8px;
   width: 100%;
+  display: block; /* Ensure wrapper is block-level for scrolling */
 }
 
 .table-wrapper::-webkit-scrollbar {
@@ -369,10 +372,10 @@
 
 .data-table {
   width: max-content;
-  min-width: 100%;
   border-collapse: collapse;
   font-size: 0.9rem;
   table-layout: auto;
+  display: table; /* Ensure table displays as table */
 }
 
 .data-table thead {

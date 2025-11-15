@@ -47,15 +47,24 @@ export interface PreferencesResponse {
 // ================================================
 
 /**
+ * Check if user is properly authenticated (has both access and refresh tokens)
+ */
+function isUserAuthenticated(): boolean {
+  const token = localStorage.getItem('ulm_token');
+  const refreshToken = localStorage.getItem('ulm_refresh_token');
+  // Need both tokens for proper authentication
+  return !!(token && refreshToken);
+}
+
+/**
  * Get user preferences for a DataGrid
  */
 export const getUserPreferences = async (
   datagridKey: string
 ): Promise<DataGridPreferences | null> => {
   // Check if user is authenticated before making server request
-  const token = localStorage.getItem('ulm_token');
-  if (!token) {
-    // No token - skip server request, use localStorage only
+  if (!isUserAuthenticated()) {
+    // No tokens or incomplete auth - skip server request, use localStorage only
     return loadFromLocalStorage(datagridKey);
   }
 
@@ -86,9 +95,8 @@ export const saveUserPreferences = async (
   saveToLocalStorage(datagridKey, preferences);
 
   // Check if user is authenticated before making server request
-  const token = localStorage.getItem('ulm_token');
-  if (!token) {
-    // No token - skip server request, localStorage already saved
+  if (!isUserAuthenticated()) {
+    // No tokens or incomplete auth - skip server request, localStorage already saved
     return;
   }
 
@@ -133,9 +141,8 @@ export const getSearchHistory = async (
   limit: number = 100
 ): Promise<SearchHistoryEntry[]> => {
   // Check if user is authenticated before making server request
-  const token = localStorage.getItem('ulm_token');
-  if (!token) {
-    // No token - skip server request, return empty array
+  if (!isUserAuthenticated()) {
+    // No tokens or incomplete auth - skip server request, return empty array
     return [];
   }
 
@@ -163,9 +170,8 @@ export const addSearchHistory = async (
   description?: string
 ): Promise<void> => {
   // Check if user is authenticated before making server request
-  const token = localStorage.getItem('ulm_token');
-  if (!token) {
-    // No token - skip server request
+  if (!isUserAuthenticated()) {
+    // No tokens or incomplete auth - skip server request
     return;
   }
 

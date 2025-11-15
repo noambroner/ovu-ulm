@@ -94,10 +94,14 @@ export const DataGrid = <T extends Record<string, any>>({
 
   const t = translations[language];
 
+  // Track if we're currently loading preferences (to prevent save loop)
+  const isLoadingPreferencesRef = useRef(false);
+
   // Load preferences from server/localStorage on mount
   useEffect(() => {
     const loadPreferences = async () => {
       if (persistStateKey) {
+        isLoadingPreferencesRef.current = true;
         try {
           const saved = await loadPreferencesHybrid(persistStateKey);
           if (saved) {
@@ -109,6 +113,10 @@ export const DataGrid = <T extends Record<string, any>>({
           console.error('Failed to load preferences:', e);
         } finally {
           setPreferencesLoaded(true);
+          // Small delay to ensure state updates complete before allowing saves
+          setTimeout(() => {
+            isLoadingPreferencesRef.current = false;
+          }, 100);
         }
       } else {
         setPreferencesLoaded(true);
@@ -120,7 +128,8 @@ export const DataGrid = <T extends Record<string, any>>({
 
   // Save preferences to server/localStorage when they change
   useEffect(() => {
-    if (persistStateKey && preferencesLoaded) {
+    // Don't save if we're currently loading preferences (prevents save loop)
+    if (persistStateKey && preferencesLoaded && !isLoadingPreferencesRef.current) {
       savePreferencesHybrid(persistStateKey, {
         filters,
         sort,

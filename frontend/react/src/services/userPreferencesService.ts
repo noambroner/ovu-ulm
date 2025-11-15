@@ -52,6 +52,13 @@ export interface PreferencesResponse {
 export const getUserPreferences = async (
   datagridKey: string
 ): Promise<DataGridPreferences | null> => {
+  // Check if user is authenticated before making server request
+  const token = localStorage.getItem('ulm_token');
+  if (!token) {
+    // No token - skip server request, use localStorage only
+    return loadFromLocalStorage(datagridKey);
+  }
+
   try {
     const response = await axios.get<PreferencesResponse | null>(
       `${API_BASE}/preferences/${datagridKey}`
@@ -75,6 +82,16 @@ export const saveUserPreferences = async (
   datagridKey: string,
   preferences: DataGridPreferences
 ): Promise<void> => {
+  // Always save to localStorage first (instant response)
+  saveToLocalStorage(datagridKey, preferences);
+
+  // Check if user is authenticated before making server request
+  const token = localStorage.getItem('ulm_token');
+  if (!token) {
+    // No token - skip server request, localStorage already saved
+    return;
+  }
+
   try {
     await axios.put(`${API_BASE}/preferences/${datagridKey}`, preferences);
     console.log(`Preferences saved to server: ${datagridKey}`);
@@ -84,8 +101,7 @@ export const saveUserPreferences = async (
     if (error.response?.status !== 401 && error.response?.status !== 403) {
       console.error('Failed to save preferences to server:', error);
     }
-    // Fallback to localStorage
-    saveToLocalStorage(datagridKey, preferences);
+    // localStorage already saved, so no need to save again
   }
 };
 
@@ -116,6 +132,13 @@ export const getSearchHistory = async (
   datagridKey: string,
   limit: number = 100
 ): Promise<SearchHistoryEntry[]> => {
+  // Check if user is authenticated before making server request
+  const token = localStorage.getItem('ulm_token');
+  if (!token) {
+    // No token - skip server request, return empty array
+    return [];
+  }
+
   try {
     const response = await axios.get<SearchHistoryEntry[]>(
       `${API_BASE}/search-history/${datagridKey}`,
@@ -139,6 +162,13 @@ export const addSearchHistory = async (
   filters: Record<string, string>,
   description?: string
 ): Promise<void> => {
+  // Check if user is authenticated before making server request
+  const token = localStorage.getItem('ulm_token');
+  if (!token) {
+    // No token - skip server request
+    return;
+  }
+
   try {
     await axios.post(`${API_BASE}/search-history/${datagridKey}`, {
       search_data: {

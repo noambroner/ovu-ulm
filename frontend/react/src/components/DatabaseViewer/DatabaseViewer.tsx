@@ -32,7 +32,7 @@ interface DatabaseViewerProps {
 }
 
 const ITEMS_PER_PAGE = 50;
-const MAX_CELL_LENGTH = 80;
+const MAX_CELL_LENGTH = 40;
 
 export const DatabaseViewer = ({ language, theme }: DatabaseViewerProps) => {
   const [tables, setTables] = useState<TableInfo[]>([]);

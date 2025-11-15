@@ -351,6 +351,20 @@
   border-radius: 8px;
 }
 
+.table-wrapper::-webkit-scrollbar {
+  height: 10px;
+  width: 10px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 999px;
+}
+
+.table-wrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 .data-table {
   width: 100%;
   border-collapse: collapse;

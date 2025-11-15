@@ -131,7 +131,8 @@ class APILogger {
       }, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('ulm_token')}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'X-App-Source': 'ulm-react-web'
         }
       });
     } catch (error) {

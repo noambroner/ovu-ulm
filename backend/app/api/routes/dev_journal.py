@@ -693,3 +693,71 @@ async def create_session_for_ai(
         await db.rollback()
         raise HTTPException(status_code=500, detail=f"Failed to create session: {str(e)}")
 
+
+@router.post(
+    "/ai/add-step",
+    summary="Add step for AI (no authentication required)",
+    description="Adds a new step to a development session. This endpoint is specifically for AI agents to document their work without needing authentication."
+)
+async def add_step_for_ai(
+    step_data: StepCreate,
+    db: AsyncSession = Depends(get_db)
+) -> Dict[str, Any]:
+    """Add a new step to a session for AI without authentication"""
+    try:
+        new_step = DevelopmentStep(
+            session_id=step_data.session_id,
+            step_number=step_data.step_number,
+            user_prompt=step_data.user_prompt,
+            ai_understanding=step_data.ai_understanding,
+            ai_actions=step_data.ai_actions,
+            result=step_data.result
+        )
+        
+        db.add(new_step)
+        await db.commit()
+        await db.refresh(new_step)
+        
+        return {
+            "success": True,
+            "step_id": new_step.id,
+            "message": f"Step #{step_data.step_number} added to session #{step_data.session_id}"
+        }
+    
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to add step: {str(e)}")
+
+
+@router.post(
+    "/ai/add-state",
+    summary="Add system state for AI (no authentication required)",
+    description="Adds system state to a development session. This endpoint is specifically for AI agents to document their work without needing authentication."
+)
+async def add_state_for_ai(
+    state_data: SystemStateCreate,
+    db: AsyncSession = Depends(get_db)
+) -> Dict[str, Any]:
+    """Add system state to a session for AI without authentication"""
+    try:
+        new_state = SystemState(
+            session_id=state_data.session_id,
+            state_at_start=state_data.state_at_start,
+            state_at_end=state_data.state_at_end,
+            changes_summary=state_data.changes_summary
+        )
+        
+        db.add(new_state)
+        await db.commit()
+        await db.refresh(new_state)
+        
+        return {
+            "success": True,
+            "state_id": new_state.id,
+            "message": f"System state added to session #{state_data.session_id}"
+        }
+    
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to add system state: {str(e)}")
+

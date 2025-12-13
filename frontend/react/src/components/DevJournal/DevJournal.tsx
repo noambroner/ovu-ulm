@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import axios from '../../api/axios.config';
-import { DataTable } from '../../../../../shared/react-components';
+import { DataTable } from '../../shared/DataTable/DataTable';
 import './DevJournal.css';
 
 interface Session {

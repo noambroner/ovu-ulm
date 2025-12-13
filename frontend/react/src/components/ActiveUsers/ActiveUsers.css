@@ -1,0 +1,58 @@
+@import '../../shared/DataTable/DataTable.css';
+
+.active-users-page {
+  padding: 2rem;
+  min-height: 100vh;
+  background: var(--background-color);
+}
+
+.active-users-page.dark {
+  --background-color: #1a1a2e;
+  --card-background: #16213e;
+  --text-primary: #eee;
+  --text-secondary: #aaa;
+  --border-color: #0f3460;
+}
+
+.active-users-page.light {
+  --background-color: #f5f7fa;
+  --card-background: #ffffff;
+  --text-primary: #2c3e50;
+  --text-secondary: #7f8c8d;
+  --border-color: #e1e8ed;
+}
+
+.active-users-header {
+  margin-bottom: 2rem;
+}
+
+.active-users-header .header-text {
+  text-align: center;
+}
+
+.active-users-header .eyebrow {
+  margin: 0 0 0.5rem;
+  font-size: 1.2rem;
+}
+
+.active-users-header h1 {
+  font-size: 2.5rem;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+
+.active-users-header .subtitle {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.active-users-card {
+  background: var(--card-background);
+  border: 2px solid var(--border-color);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+}
+

@@ -32,11 +32,11 @@ dependencies:
   flutter_secure_storage: ^9.0.0
   
   # Localization & RTL
-  intl: ^0.18.1
+  intl: ^0.19.0
   
   # Forms & Validation
-  flutter_form_builder: ^9.1.1
-  form_builder_validators: ^9.1.0
+  flutter_form_builder: ^9.4.1
+  form_builder_validators: ^11.0.0
   
   # Icons & Images
   flutter_svg: ^2.0.9
@@ -136,9 +136,9 @@ flutter:
         - asset: assets/fonts/Roboto/Roboto-Bold.ttf
           weight: 700
 
-# Custom path for shared resources
+# Custom path for shared resources (relative to ovu/worktrees/ulm-work/frontend/flutter)
 dependency_overrides:
   interface_resources:
-    path: ../../../../shared/interface-resources/flutter
+    path: ../../../shared-work/interface-resources/flutter
   localization:
-    path: ../../../../shared/localization
+    path: ../../../shared-work/localization

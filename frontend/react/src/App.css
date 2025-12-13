@@ -1,4 +1,4 @@
-n/* Global Scrollbar Fix - No body scroll */
+/* Global Scrollbar Fix - No body scroll */
 html, body {
   height: 100vh;
   max-height: 100vh;

@@ -16,6 +16,10 @@
     "moduleDetection": "force",
     "noEmit": true,
     "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "../../../../../shared/react-components": ["src/types/shared-react-components.d.ts"]
+    },
 
     /* Linting */
     "strict": true,

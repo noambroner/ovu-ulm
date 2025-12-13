@@ -38,30 +38,30 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info(f"Starting {settings.SERVICE_NAME} v{settings.SERVICE_VERSION}")
     logger.info("Multi-language support enabled: Hebrew, English, Arabic")
-    
+
     # Initialize database
     await init_db()
     logger.info("Database initialized")
-    
+
     # Initialize User Status Scheduler
     start_scheduler()
     logger.info("User status scheduler initialized")
-    
+
     # Initialize Redis connection
     # TODO: Initialize Redis
-    
+
     # Initialize Celery
     # TODO: Initialize Celery
-    
+
     yield
-    
+
     # Shutdown
     logger.info("Shutting down ULM service")
-    
+
     # Shutdown scheduler
     shutdown_scheduler()
     logger.info("Scheduler shut down")
-    
+
     await close_db()
     logger.info("Database connections closed")
 
@@ -109,14 +109,14 @@ async def add_request_id(request: Request, call_next):
     import uuid
     request_id = str(uuid.uuid4())
     request.state.request_id = request_id
-    
+
     start_time = time.time()
     response = await call_next(request)
     process_time = time.time() - start_time
-    
+
     response.headers["X-Request-ID"] = request_id
     response.headers["X-Process-Time"] = str(process_time)
-    
+
     # Log request
     logger.info(
         f"Request ID: {request_id} | "
@@ -124,7 +124,7 @@ async def add_request_id(request: Request, call_next):
         f"Method: {request.method} | "
         f"Process Time: {process_time:.3f}s"
     )
-    
+
     return response
 
 # Security headers middleware
@@ -149,12 +149,12 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
     summary="Root Endpoint",
     description="""
     Root endpoint providing service information and API documentation links.
-    
+
     **Returns:**
     - Service name and version
     - Operational status
     - Link to API documentation
-    
+
     **Use Cases:**
     - Verify service is accessible
     - Get API documentation URL
@@ -192,17 +192,17 @@ async def root():
     summary="Health Check",
     description="""
     Basic health check endpoint to verify service is running.
-    
+
     **Returns:**
     - Service health status
     - Service name and version
-    
+
     **Use Cases:**
     - Load balancer health checks
     - Monitoring system health probes
     - Uptime monitoring
     - CI/CD deployment validation
-    
+
     **Note:** This is a lightweight check that only verifies the service is responsive.
     For dependency checks, use `/ready` endpoint.
     """,
@@ -236,26 +236,26 @@ async def health_check():
     summary="Readiness Check",
     description="""
     Readiness check endpoint to verify all dependencies are operational.
-    
+
     **Checks:**
     - **Database:** PostgreSQL connection and query execution
     - **Redis:** Connection to Redis cache (placeholder)
     - **Celery:** Celery worker availability (placeholder)
-    
+
     **Returns:**
     - Overall readiness status
     - Individual check results
-    
+
     **Use Cases:**
     - Kubernetes readiness probes
     - Service mesh health checks
     - Load balancer configuration
     - Deployment validation before accepting traffic
-    
+
     **Response Codes:**
     - `200 OK` - All dependencies are ready
     - `503 Service Unavailable` - One or more dependencies are not ready
-    
+
     **Note:** Service should not receive traffic until this endpoint returns 200.
     """,
     responses={
@@ -298,7 +298,7 @@ async def readiness_check():
         "redis": False,
         "celery": False
     }
-    
+
     # Check database
     try:
         from app.core.database import engine
@@ -308,17 +308,17 @@ async def readiness_check():
             checks["database"] = True
     except Exception as e:
         logger.error(f"Database check failed: {e}")
-    
+
     # Check Redis
     # TODO: Add Redis check
     checks["redis"] = True  # Placeholder
-    
+
     # Check Celery
     # TODO: Add Celery check
     checks["celery"] = True  # Placeholder
-    
+
     all_ready = all(checks.values())
-    
+
     return JSONResponse(
         status_code=200 if all_ready else 503,
         content={
@@ -344,7 +344,7 @@ async def internal_error_handler(request: Request, exc):
     """Custom 500 handler"""
     request_id = getattr(request.state, 'request_id', 'unknown')
     logger.error(f"Internal server error - Request ID: {request_id}", exc_info=exc)
-    
+
     return JSONResponse(
         status_code=500,
         content={
@@ -358,13 +358,13 @@ async def internal_error_handler(request: Request, exc):
 if settings.SENTRY_DSN:
     import sentry_sdk
     from sentry_sdk.integrations.asgi import SentryAsgiMiddleware
-    
+
     sentry_sdk.init(
         dsn=settings.SENTRY_DSN,
         environment="development" if settings.DEBUG else "production",
         traces_sample_rate=0.1
     )
-    
+
     app.add_middleware(SentryAsgiMiddleware)
 
 if __name__ == "__main__":

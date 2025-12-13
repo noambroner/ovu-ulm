@@ -4,6 +4,7 @@ import api from './api/axios.config';
 import { Sidebar } from './components/Sidebar/Sidebar';
 import { Dashboard } from './components/Dashboard/Dashboard';
 import { UsersTable } from './components/UsersTable/UsersTable';
+import { ActiveUsers } from './components/ActiveUsers/ActiveUsers';
 import { ManagePage } from './components/ManagePage/ManagePage';
 import { TokenControl } from './components/TokenControl/TokenControl';
 import { APIUIEndpoints } from './components/APIUIEndpoints/APIUIEndpoints';
@@ -38,6 +39,7 @@ const translations = {
     welcome: 'ברוך הבא',
     totalUsers: 'סה"כ משתמשים',
     activeUsers: 'משתמשים פעילים',
+    activeUsersPage: 'משתמשים פעילים',
     newUsers: 'משתמשים חדשים',
     recentActivity: 'פעילות אחרונה',
     // Menu
@@ -83,6 +85,7 @@ const translations = {
     welcome: 'Welcome',
     totalUsers: 'Total Users',
     activeUsers: 'Active Users',
+    activeUsersPage: 'Active Users',
     newUsers: 'New Users',
     recentActivity: 'Recent Activity',
     // Menu
@@ -272,6 +275,13 @@ function AppContent() {
           labelEn: t.allUsers,
           icon: '📋',
           path: '/users/all'
+        },
+        {
+          id: 'active-users',
+          label: t.activeUsersPage,
+          labelEn: t.activeUsersPage,
+          icon: '⚡',
+          path: '/users/active'
         },
         {
           id: 'add-user',
@@ -565,6 +575,7 @@ function AppContent() {
                 quickActions={quickActions}
               />
             } />
+            <Route path="/users/active" element={<ActiveUsers language={language} theme={theme} />} />
             <Route path="/users/all" element={<UsersTable language={language} theme={theme} apiEndpoint={API_URL} token={localStorage.getItem("ulm_token") || ""} />} />
             <Route path="/users/add" element={<div className="page-placeholder">➕ {t.addUser}</div>} />
             <Route path="/profile" element={<div className="page-placeholder">👤 {t.profile}</div>} />

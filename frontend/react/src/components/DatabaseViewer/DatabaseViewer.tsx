@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import axios from '../../api/axios.config';
+import { DataTable } from '../../shared/DataTable/DataTable';
 import './DatabaseViewer.css';
 
 interface Column {
@@ -45,7 +46,6 @@ export const DatabaseViewer = ({ language, theme }: DatabaseViewerProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [tableListSearch, setTableListSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedRow, setSelectedRow] = useState<any | null>(null);
 
   const t = {
     he: {
@@ -181,11 +181,6 @@ export const DatabaseViewer = ({ language, theme }: DatabaseViewerProps) => {
   const handleTableSelect = (tableName: string) => {
     setSelectedTable(tableName);
     setSearchTerm('');
-    setSelectedRow(null);
-  };
-
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
   };
 
   const handleTableListSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -229,9 +224,6 @@ export const DatabaseViewer = ({ language, theme }: DatabaseViewerProps) => {
     a.click();
   };
 
-  const totalPages = tableData
-    ? Math.ceil(tableData.pagination.total / ITEMS_PER_PAGE)
-    : 0;
 
   const filteredTables = useMemo(() => {
     if (!tableListSearch.trim()) {
@@ -246,20 +238,6 @@ export const DatabaseViewer = ({ language, theme }: DatabaseViewerProps) => {
     [tables]
   );
 
-  const formatCellValue = (value: any) => {
-    if (value === null || value === undefined) {
-      return { type: 'null', display: 'NULL', full: 'NULL' };
-    }
-    if (typeof value === 'boolean') {
-      return { type: 'boolean', display: value ? '✓' : '✗', full: value ? 'true' : 'false', boolValue: value };
-    }
-    const full = typeof value === 'object' ? JSON.stringify(value) : String(value);
-    const isTruncated = full.length > MAX_CELL_LENGTH;
-    const display = isTruncated ? `${full.slice(0, MAX_CELL_LENGTH)}…` : full;
-    return { type: 'text', display, full };
-  };
-
-  const closeRowModal = () => setSelectedRow(null);
 
   return (
     <div className={`database-viewer ${theme}`} dir={language === 'he' || language === 'ar' ? 'rtl' : 'ltr'}>
@@ -338,142 +316,33 @@ export const DatabaseViewer = ({ language, theme }: DatabaseViewerProps) => {
                   )}
                 </div>
                 <div className="toolbar-right">
-                  <div className="search-box">
-                    <input
-                      type="text"
-                      placeholder={t[language].search}
-                      value={searchTerm}
-                      onChange={handleSearch}
-                      className="search-input"
-                    />
-                    {searchTerm && (
-                      <button
-                        className="clear-search-btn"
-                        onClick={() => setSearchTerm('')}
-                        title={t[language].clearSearch}
-                      >
-                        ✕
-                      </button>
-                    )}
-                  </div>
                   <button className="toolbar-btn" onClick={handleRefresh} title={t[language].refresh}>🔄</button>
-                  <button className="toolbar-btn" onClick={exportToCSV} title={t[language].exportCSV}>📥</button>
                 </div>
               </div>
 
-              {tableDataLoading ? (
-                <div className="loading-container">
-                  <div className="loading-spinner"></div>
-                  <p>{t[language].loading}</p>
-                </div>
-              ) : tableDataError ? (
-                <div className="error-container">
-                  <span className="error-icon">⚠️</span>
-                  <p>{t[language].error}: {tableDataError}</p>
-                </div>
-              ) : tableData && tableData.data.length > 0 ? (
-                <>
-                  <div className="table-wrapper">
-                    <table className="data-table">
-                      <thead>
-                        <tr>
-                          {tableData.columns.map((col) => (
-                            <th key={col}>{col}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {tableData.data.map((row, rowIndex) => (
-                          <tr key={rowIndex} onClick={() => setSelectedRow(row)}>
-                            {tableData.columns.map((col) => {
-                              const cell = formatCellValue(row[col]);
-                              if (cell.type === 'null') {
-                                return (
-                                  <td key={col}>
-                                    <span className="null-value">NULL</span>
-                                  </td>
-                                );
-                              }
-                              if (cell.type === 'boolean') {
-                                return (
-                                  <td key={col} title={cell.full}>
-                                    <span className={`bool-value ${cell.boolValue ? 'true' : 'false'}`}>{cell.display}</span>
-                                  </td>
-                                );
-                              }
-                              return (
-                                <td key={col} title={cell.full}>
-                                  <span className="cell-text">{cell.display}</span>
-                                </td>
-                              );
-                            })}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  <div className="pagination">
-                    <div className="pagination-info">
-                      {t[language].showing} {tableData.pagination.skip + 1}-
-                      {Math.min(tableData.pagination.skip + tableData.pagination.returned, tableData.pagination.total)}{' '}
-                      {t[language].of} {tableData.pagination.total} {t[language].records}
-                    </div>
-                    <div className="pagination-controls">
-                      <button
-                        className="pagination-btn"
-                        onClick={() => handlePageChange(currentPage - 1)}
-                        disabled={currentPage === 1}
-                      >
-                        {t[language].previousPage}
-                      </button>
-                      <span className="page-indicator">
-                        {t[language].page} {currentPage} {t[language].of} {totalPages}
-                      </span>
-                      <button
-                        className="pagination-btn"
-                        onClick={() => handlePageChange(currentPage + 1)}
-                        disabled={currentPage === totalPages}
-                      >
-                        {t[language].nextPage}
-                      </button>
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <div className="no-data-container">
-                  <span className="no-data-icon">📭</span>
-                  <p>{t[language].noData}</p>
-                </div>
-              )}
+              <DataTable
+                columns={tableData?.columns || []}
+                data={tableData?.data || []}
+                pagination={tableData?.pagination}
+                language={language}
+                theme={theme}
+                loading={tableDataLoading}
+                error={tableDataError}
+                searchable={true}
+                searchValue={searchTerm}
+                onSearchChange={setSearchTerm}
+                onPageChange={handlePageChange}
+                exportable={true}
+                onExport={exportToCSV}
+                maxCellLength={MAX_CELL_LENGTH}
+                showRowDetails={true}
+                translations={t}
+              />
             </>
           )}
         </div>
       </div>
 
-      {selectedRow && tableData && (
-        <div className="row-modal-overlay" onClick={closeRowModal}>
-          <div className="row-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="row-modal-header">
-              <h3>{t[language].rowDetails}</h3>
-              <button className="row-modal-close" onClick={closeRowModal} title={t[language].close}>✕</button>
-            </div>
-            <div className="row-modal-content">
-              {tableData.columns.map((col) => {
-                const cell = formatCellValue(selectedRow[col]);
-                return (
-                  <div key={col} className="row-modal-row">
-                    <span className="row-modal-key">{col}</span>
-                    <span className="row-modal-value">
-                      {cell.type === 'null' ? 'NULL' : cell.full}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

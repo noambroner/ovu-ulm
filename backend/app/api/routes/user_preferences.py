@@ -84,9 +84,19 @@ async def get_user_preferences(
     if not pref:
         return None
 
+    # Convert JSONB to dict if needed (SQLAlchemy JSONB should already be dict, but ensure it)
+    prefs_dict = pref.preferences
+    if prefs_dict is None:
+        prefs_dict = {}
+    elif not isinstance(prefs_dict, dict):
+        try:
+            prefs_dict = dict(prefs_dict) if prefs_dict else {}
+        except (TypeError, ValueError):
+            prefs_dict = {}
+
     return {
         "datagrid_key": pref.datagrid_key,
-        "preferences": pref.preferences,
+        "preferences": prefs_dict,
         "updated_at": pref.updated_at
     }
 
@@ -203,15 +213,26 @@ async def get_search_history(
     )
     history = result.scalars().all()
 
-    return [
-        {
+    result_list = []
+    for h in history:
+        # Convert JSONB to dict if needed
+        search_data = h.search_data
+        if search_data is None:
+            search_data = {}
+        elif not isinstance(search_data, dict):
+            try:
+                search_data = dict(search_data) if search_data else {}
+            except (TypeError, ValueError):
+                search_data = {}
+        
+        result_list.append({
             "id": h.id,
             "datagrid_key": h.datagrid_key,
-            "search_data": h.search_data,
+            "search_data": search_data,
             "created_at": h.created_at
-        }
-        for h in history
-    ]
+        })
+    
+    return result_list
 
 
 @router.post("/search-history/{datagrid_key}", status_code=status.HTTP_201_CREATED)

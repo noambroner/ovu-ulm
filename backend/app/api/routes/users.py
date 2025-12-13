@@ -227,6 +227,53 @@ async def get_users(
 
 
 @router.get(
+    "/users/active",
+    summary="List currently active users",
+    description="Returns users whose status is active/scheduled and have not left the current session.",
+    response_model=None,
+)
+async def list_active_users(
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user)
+) -> Dict[str, Any]:
+    """
+    Get all currently active/connected users.
+    """
+    try:
+        stmt = select(
+            User.id,
+            User.username,
+            User.first_name,
+            User.last_name,
+            User.current_joined_at,
+            User.status,
+        ).where(
+            User.status.in_(["active", "scheduled_deactivation"]),
+            User.current_left_at.is_(None)
+        ).order_by(User.current_joined_at.desc())
+
+        result = await db.execute(stmt)
+        rows = result.fetchall()
+
+        return {
+            "success": True,
+            "active_users": [
+                {
+                    "id": row.id,
+                    "username": row.username,
+                    "first_name": row.first_name,
+                    "last_name": row.last_name,
+                    "last_connected_at": row.current_joined_at.isoformat() if row.current_joined_at else None,
+                    "status": row.status,
+                }
+                for row in rows
+            ]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch active users: {str(e)}")
+
+
+@router.get(
     "/users/{user_id}",
     summary="Get user by ID",
     description="Returns detailed information about a specific user.",

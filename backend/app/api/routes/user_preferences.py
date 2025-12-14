@@ -10,10 +10,13 @@ from sqlalchemy import select, delete
 from typing import List, Optional
 from pydantic import BaseModel
 from datetime import datetime
+import logging
 
 from app.core.database import get_db
 from app.models.user_preferences import UserDataGridPreference, UserSearchHistory
 from app.core.security import get_current_user
+
+logger = logging.getLogger(__name__)
 
 
 router = APIRouter(tags=["User Preferences"])
@@ -94,11 +97,26 @@ async def get_user_preferences(
         except (TypeError, ValueError):
             prefs_dict = {}
 
-    return {
-        "datagrid_key": pref.datagrid_key,
-        "preferences": prefs_dict,
-        "updated_at": pref.updated_at
-    }
+    # Convert dict to PreferencesData object for proper serialization
+    try:
+        preferences_data = PreferencesData(**prefs_dict)
+    except Exception as e:
+        # If conversion fails, log and use defaults
+        logger.warning(f"Failed to parse preferences for user {user_id}, datagrid {datagrid_key}: {e}. Using defaults.")
+        preferences_data = PreferencesData()
+
+    try:
+        return PreferencesResponse(
+            datagrid_key=pref.datagrid_key,
+            preferences=preferences_data,
+            updated_at=pref.updated_at
+        )
+    except Exception as e:
+        logger.error(f"Failed to create PreferencesResponse for user {user_id}, datagrid {datagrid_key}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to serialize preferences: {str(e)}"
+        )
 
 
 @router.put("/preferences/{datagrid_key}")
@@ -216,22 +234,35 @@ async def get_search_history(
     result_list = []
     for h in history:
         # Convert JSONB to dict if needed
-        search_data = h.search_data
-        if search_data is None:
-            search_data = {}
-        elif not isinstance(search_data, dict):
+        search_data_dict = h.search_data
+        if search_data_dict is None:
+            search_data_dict = {}
+        elif not isinstance(search_data_dict, dict):
             try:
-                search_data = dict(search_data) if search_data else {}
+                search_data_dict = dict(search_data_dict) if search_data_dict else {}
             except (TypeError, ValueError):
-                search_data = {}
-        
-        result_list.append({
-            "id": h.id,
-            "datagrid_key": h.datagrid_key,
-            "search_data": search_data,
-            "created_at": h.created_at
-        })
-    
+                search_data_dict = {}
+
+        # Convert dict to SearchHistoryData object for proper serialization
+        try:
+            search_data = SearchHistoryData(**search_data_dict)
+        except Exception as e:
+            # If conversion fails, log and use defaults
+            logger.warning(f"Failed to parse search_data for history entry {h.id}: {e}. Using defaults.")
+            search_data = SearchHistoryData(filters={})
+
+        try:
+            result_list.append(SearchHistoryResponse(
+                id=h.id,
+                datagrid_key=h.datagrid_key,
+                search_data=search_data,
+                created_at=h.created_at
+            ))
+        except Exception as e:
+            logger.error(f"Failed to create SearchHistoryResponse for entry {h.id}: {e}")
+            # Skip this entry rather than failing the whole request
+            continue
+
     return result_list
 
 

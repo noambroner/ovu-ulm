@@ -10,7 +10,7 @@
    ```
    ACTION: Use the read_file tool to read:
    README.md
-   
+
    The README contains a critical "⚠️ לסוכני AI - קרא קודם כל דבר אחר!" section at the top.
    READ THIS SECTION FIRST to understand the mandatory workflow.
    ```
@@ -19,7 +19,7 @@
    ```
    ACTION: Use the read_file tool to read:
    frontend/react/src/components/DevelopmentGuidelines/DevelopmentGuidelines.tsx
-   
+
    This file contains 16 detailed guidelines with code examples and best practices.
    READ THE ENTIRE FILE to understand all guidelines before starting any work.
    ```
@@ -29,7 +29,7 @@
 2. **📝 ASK USER to share Development Journal context:**
    ```
    ACTION: Tell the user:
-   "לפני שאתחיל לעבוד, בבקשה פתח את https://ulm-rct.ovu.co.il/dev-journal 
+   "לפני שאתחיל לעבוד, בבקשה פתח את https://ulm-rct.ovu.co.il/dev-journal
    ושתף אותי עם הסשנים האחרונים (אם יש) כדי שאבין את ההקשר."
    ```
    - **Purpose:** Understand previous development sessions and their outcomes
@@ -239,6 +239,26 @@ git push
 - Backend API: http://64.176.171.223:8001
 - Dev Guidelines: https://ulm-rct.ovu.co.il/dev-guidelines
 - Dev Journal: https://ulm-rct.ovu.co.il/dev-journal
+
+**Server Credentials:**
+- **Frontend Server (dataflow-dev2):**
+  - IP: 64.176.173.105
+  - User: ploi
+  - Sudo Password: 43ACBUHlZWOxwAueKji8
+  - SSH Key: ~/.ssh/ovu_key
+
+- **Backend Server (dataflow-dev1):**
+  - IP: 64.176.171.223
+  - User: ploi
+  - Sudo Password: mb9z7KRSD9VVQLgpb596
+  - SSH Key: ~/.ssh/ovu_key
+
+- **Database Server (dataflow-dev-db):**
+  - IP: 64.177.67.215
+  - User: ploi
+  - Sudo Password: 0BweAsz8ptKfsYuBt5Dy
+  - Database User: ploi
+  - Database Password: qU4EuCVGncATUOaTk4UR
 
 ---
 

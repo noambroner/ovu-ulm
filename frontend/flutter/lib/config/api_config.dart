@@ -1,7 +1,7 @@
 /// API Configuration for ULM Backend
 class ApiConfig {
-  // Base URL - Change according to environment
-  static const String baseUrl = 'http://localhost:8000';
+  // Base URL - Production Backend Server
+  static const String baseUrl = 'http://64.176.171.223:8001';
 
   // API Endpoints
   static const String authLogin = '/api/v1/auth/login';

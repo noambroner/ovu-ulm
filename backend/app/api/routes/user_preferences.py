@@ -224,14 +224,14 @@ async def get_search_history(
                 search_data = dict(search_data) if search_data else {}
             except (TypeError, ValueError):
                 search_data = {}
-        
+
         result_list.append({
             "id": h.id,
             "datagrid_key": h.datagrid_key,
             "search_data": search_data,
             "created_at": h.created_at
         })
-    
+
     return result_list
 
 

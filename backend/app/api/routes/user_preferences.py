@@ -66,7 +66,7 @@ class SearchHistoryResponse(BaseModel):
 @router.get("/preferences/{datagrid_key}", response_model=Optional[PreferencesResponse])
 async def get_user_preferences(
     datagrid_key: str,
-    current_user: dict = Depends(get_current_user),
+    current_user = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -124,7 +124,7 @@ async def get_user_preferences(
 async def save_user_preferences(
     datagrid_key: str,
     preferences: PreferencesData,
-    current_user: dict = Depends(get_current_user),
+    current_user = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -170,7 +170,7 @@ async def save_user_preferences(
 @router.delete("/preferences/{datagrid_key}")
 async def delete_user_preferences(
     datagrid_key: str,
-    current_user: dict = Depends(get_current_user),
+    current_user = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -212,7 +212,7 @@ async def delete_user_preferences(
 async def get_search_history(
     datagrid_key: str,
     limit: int = 100,
-    current_user: dict = Depends(get_current_user),
+    current_user = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -274,7 +274,7 @@ async def get_search_history(
 async def add_search_history(
     datagrid_key: str,
     data: SearchHistoryCreate,
-    current_user: dict = Depends(get_current_user),
+    current_user = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -305,7 +305,7 @@ async def add_search_history(
 @router.delete("/search-history/{history_id}")
 async def delete_search_history(
     history_id: int,
-    current_user: dict = Depends(get_current_user),
+    current_user = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """

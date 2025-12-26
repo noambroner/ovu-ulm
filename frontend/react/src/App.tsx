@@ -1,37 +1,8 @@
-import { useState, useEffect, lazy, Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import api from './api/axios.config';
-
-// Federated OVU Sidebar - loaded from remote
-const OVUSidebar = lazy(() => import('sidebar/Sidebar').then(m => ({ default: m.OVUSidebar || m.default })));
-
-// Fallback sidebar skeleton
-const SidebarSkeleton = () => (
-  <aside className="sidebar-skeleton" style={{
-    width: '280px',
-    height: '100vh',
-    background: 'var(--color-surface, #1e293b)',
-    position: 'fixed',
-    right: 0,
-    top: 0,
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '12px',
-  }}>
-    <div style={{
-      width: '32px',
-      height: '32px',
-      border: '3px solid var(--color-border, #334155)',
-      borderTopColor: 'var(--color-primary, #6366f1)',
-      borderRadius: '50%',
-      animation: 'spin 1s linear infinite',
-    }} />
-    <span style={{ color: 'var(--color-text-muted, #94a3b8)', fontSize: '14px' }}>טוען סרגל...</span>
-    <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-  </aside>
-);
+import { OVUSidebar } from '@ovu/sidebar';
+import '@ovu/sidebar/dist/style.css';
 import { Dashboard } from './components/Dashboard/Dashboard';
 import { UsersTable } from './components/UsersTable/UsersTable';
 import { ActiveUsers } from './components/ActiveUsers/ActiveUsers';
@@ -152,13 +123,13 @@ const translations = {
 function AppContent() {
   // API Configuration
   const API_URL = import.meta.env.VITE_API_URL || '';
-  
+
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   const [language, setLanguage] = useState<'he' | 'en'>('he');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [loading, setLoading] = useState(true);
-  
+
   // Login form
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -166,7 +137,6 @@ function AppContent() {
   const [error, setError] = useState('');
 
   const navigate = useNavigate();
-  useLocation(); // Keep for potential future use
   const t = translations[language];
 
   useEffect(() => {
@@ -187,7 +157,7 @@ function AppContent() {
     const checkAuth = async () => {
       const token = localStorage.getItem('ulm_token');
       const refreshToken = localStorage.getItem('ulm_refresh_token');
-      
+
       // If no tokens at all, skip auth check
       if (!token || !refreshToken) {
         localStorage.removeItem('ulm_token');
@@ -196,7 +166,7 @@ function AppContent() {
         setIsLoggedIn(false);
         return;
       }
-      
+
       try {
         const response = await api.get('/api/v1/auth/me');
         setUserInfo(response.data);
@@ -228,10 +198,10 @@ function AppContent() {
       setUserInfo(null);
       setLoading(false);
     };
-    
+
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('auth:logout', handleAuthLogout);
-    
+
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('auth:logout', handleAuthLogout);
@@ -283,9 +253,6 @@ function AppContent() {
       navigate('/');
     }
   };
-
-  // Menu items now come from SAM via federated sidebar
-  // Local menu config removed - managed centrally in SAM
 
   const stats = [
     {
@@ -433,46 +400,29 @@ function AppContent() {
     );
   }
 
-  // Handle app switching from sidebar
-  const handleAppSwitch = (app: any) => {
-    if (app.frontendUrl && app.code !== 'ulm') {
-      window.location.href = app.frontendUrl;
-    }
-  };
-
-  // Handle menu item clicks
-  const handleMenuItemClick = (item: any, app: any) => {
-    if (app.code === 'ulm') {
-      navigate(item.path);
-    } else if (app.frontendUrl) {
-      window.location.href = `${app.frontendUrl}${item.path}`;
-    }
-  };
-
   return (
     <div className="app-layout" dir={language === 'he' ? 'rtl' : 'ltr'}>
-      {/* Federated OVU Sidebar */}
-      <Suspense fallback={<SidebarSkeleton />}>
-        <OVUSidebar
-          currentApp="ulm"
-          samApiUrl="https://sam.ovu.co.il/api/v1"
-          language={language}
-          theme={theme}
-          showSearch={true}
-          showUser={true}
-          user={userInfo ? {
-            id: userInfo.id,
-            username: userInfo.username,
-            email: userInfo.email,
-            role: userInfo.role,
-          } : undefined}
-          onAppSwitch={handleAppSwitch}
-          onMenuItemClick={handleMenuItemClick}
-          onLogout={handleLogout}
-          onSettings={() => navigate('/settings')}
-        />
-      </Suspense>
-      
+      <OVUSidebar
+        currentApp="ulm"
+        language={language}
+        theme={theme}
+        user={userInfo ? {
+          id: userInfo.id,
+          username: userInfo.username,
+          email: userInfo.email,
+          role: userInfo.role,
+        } : undefined}
+        onAppSwitch={(app) => {
+          if (app.frontendUrl) {
+            window.location.href = app.frontendUrl;
+          }
+        }}
+        onMenuItemClick={(item) => {
+          navigate(item.path);
+        }}
+        onLogout={handleLogout}
+      />
+
       <div className="main-layout">
         <header className="app-header">
           <h1 className="header-title">{t.headerTitle}</h1>

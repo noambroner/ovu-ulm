@@ -3,7 +3,7 @@
 // Module Federation - Remote Sidebar declarations
 declare module 'sidebar/Sidebar' {
   import { FC } from 'react';
-  
+
   interface SidebarUser {
     id: string | number;
     username: string;
@@ -48,12 +48,12 @@ declare module 'sidebar/Sidebar' {
 
 declare module 'sidebar/SidebarProvider' {
   import { FC, ReactNode } from 'react';
-  
+
   interface SidebarProviderProps {
     children: ReactNode;
     config: any;
   }
-  
+
   export const SidebarProvider: FC<SidebarProviderProps>;
   export const useSidebar: () => any;
 }

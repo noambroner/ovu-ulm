@@ -1,7 +1,37 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import api from './api/axios.config';
-import { Sidebar } from './components/Sidebar/Sidebar';
+
+// Federated OVU Sidebar - loaded from remote
+const OVUSidebar = lazy(() => import('sidebar/Sidebar').then(m => ({ default: m.OVUSidebar || m.default })));
+
+// Fallback sidebar skeleton
+const SidebarSkeleton = () => (
+  <aside className="sidebar-skeleton" style={{
+    width: '280px',
+    height: '100vh',
+    background: 'var(--color-surface, #1e293b)',
+    position: 'fixed',
+    right: 0,
+    top: 0,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '12px',
+  }}>
+    <div style={{
+      width: '32px',
+      height: '32px',
+      border: '3px solid var(--color-border, #334155)',
+      borderTopColor: 'var(--color-primary, #6366f1)',
+      borderRadius: '50%',
+      animation: 'spin 1s linear infinite',
+    }} />
+    <span style={{ color: 'var(--color-text-muted, #94a3b8)', fontSize: '14px' }}>טוען סרגל...</span>
+    <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+  </aside>
+);
 import { Dashboard } from './components/Dashboard/Dashboard';
 import { UsersTable } from './components/UsersTable/UsersTable';
 import { ActiveUsers } from './components/ActiveUsers/ActiveUsers';
@@ -136,7 +166,7 @@ function AppContent() {
   const [error, setError] = useState('');
 
   const navigate = useNavigate();
-  const location = useLocation();
+  useLocation(); // Keep for potential future use
   const t = translations[language];
 
   useEffect(() => {
@@ -254,142 +284,8 @@ function AppContent() {
     }
   };
 
-  const menuItems = [
-    {
-      id: 'dashboard',
-      label: t.dashboard,
-      labelEn: t.dashboard,
-      icon: '📊',
-      path: '/dashboard'
-    },
-    {
-      id: 'users',
-      label: t.users,
-      labelEn: t.users,
-      icon: '👥',
-      path: '/users',
-      subItems: [
-        {
-          id: 'all-users',
-          label: t.allUsers,
-          labelEn: t.allUsers,
-          icon: '📋',
-          path: '/users/all'
-        },
-        {
-          id: 'active-users',
-          label: t.activeUsersPage,
-          labelEn: t.activeUsersPage,
-          icon: '⚡',
-          path: '/users/active'
-        },
-        {
-          id: 'add-user',
-          label: t.addUser,
-          labelEn: t.addUser,
-          icon: '➕',
-          path: '/users/add'
-        }
-      ]
-    },
-    {
-      id: 'profile',
-      label: t.profile,
-      labelEn: t.profile,
-      icon: '👤',
-      path: '/profile'
-    },
-    {
-      id: 'manage',
-      label: t.manage,
-      labelEn: t.manage,
-      icon: '🛠️',
-      path: '/manage',
-      subItems: [
-        {
-          id: 'token-control',
-          label: t.tokenControl,
-          labelEn: 'Token Control',
-          icon: '🔐',
-          path: '/token-control'
-        },
-        {
-          id: 'application-map',
-          label: t.applicationMap,
-          labelEn: t.applicationMap,
-          icon: '🗺️',
-          path: '/application-map'
-        },
-        {
-          id: 'database-viewer',
-          label: t.databaseViewer,
-          labelEn: t.databaseViewer,
-          icon: '🗄️',
-          path: '/database-viewer'
-        },
-        {
-          id: 'logs',
-          label: t.logs,
-          labelEn: t.logs,
-          icon: '📋',
-          path: '/logs',
-          subItems: [
-            {
-              id: 'backend-logs',
-              label: t.backendLogs,
-              labelEn: t.backendLogs,
-              icon: '🖥️',
-              path: '/logs/backend'
-            },
-            {
-              id: 'frontend-logs',
-              label: t.frontendLogs,
-              labelEn: t.frontendLogs,
-              icon: '🌐',
-              path: '/logs/frontend'
-            }
-          ]
-        },
-        {
-          id: 'dev-journal',
-          label: t.devJournal,
-          labelEn: t.devJournal,
-          icon: '📝',
-          path: '/dev-journal'
-        },
-        {
-          id: 'dev-guidelines',
-          label: t.devGuidelines,
-          labelEn: t.devGuidelines,
-          icon: '📚',
-          path: '/dev-guidelines'
-        },
-        {
-          id: 'api',
-          label: t.api,
-          labelEn: t.api,
-          icon: '📡',
-          path: '/api',
-          subItems: [
-            {
-              id: 'api-ui',
-              label: t.apiUIEndpoints,
-              labelEn: t.apiUIEndpoints,
-              icon: '🌐',
-              path: '/api/ui'
-            },
-            {
-              id: 'api-functions',
-              label: t.apiFunctions,
-              labelEn: t.apiFunctions,
-              icon: '⚡',
-              path: '/api/functions'
-            }
-          ]
-        }
-      ]
-    }
-  ];
+  // Menu items now come from SAM via federated sidebar
+  // Local menu config removed - managed centrally in SAM
 
   const stats = [
     {
@@ -537,15 +433,45 @@ function AppContent() {
     );
   }
 
+  // Handle app switching from sidebar
+  const handleAppSwitch = (app: any) => {
+    if (app.frontendUrl && app.code !== 'ulm') {
+      window.location.href = app.frontendUrl;
+    }
+  };
+
+  // Handle menu item clicks
+  const handleMenuItemClick = (item: any, app: any) => {
+    if (app.code === 'ulm') {
+      navigate(item.path);
+    } else if (app.frontendUrl) {
+      window.location.href = `${app.frontendUrl}${item.path}`;
+    }
+  };
+
   return (
     <div className="app-layout" dir={language === 'he' ? 'rtl' : 'ltr'}>
-      <Sidebar
-        menuItems={menuItems}
-        currentPath={location.pathname}
-        language={language}
-        theme={theme}
-        onNavigate={(path) => navigate(path)}
-      />
+      {/* Federated OVU Sidebar */}
+      <Suspense fallback={<SidebarSkeleton />}>
+        <OVUSidebar
+          currentApp="ulm"
+          samApiUrl="https://sam.ovu.co.il/api/v1"
+          language={language}
+          theme={theme}
+          showSearch={true}
+          showUser={true}
+          user={userInfo ? {
+            id: userInfo.id,
+            username: userInfo.username,
+            email: userInfo.email,
+            role: userInfo.role,
+          } : undefined}
+          onAppSwitch={handleAppSwitch}
+          onMenuItemClick={handleMenuItemClick}
+          onLogout={handleLogout}
+          onSettings={() => navigate('/settings')}
+        />
+      </Suspense>
       
       <div className="main-layout">
         <header className="app-header">

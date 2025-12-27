@@ -1,0 +1,15 @@
+{
+  "setup-worktree": [
+    "echo '🚀 Setting up ULM worktree...'",
+    "if [ -f scripts/link-shared.sh ]; then",
+    "  echo '🔗 Linking shared resources...'",
+    "  bash scripts/link-shared.sh",
+    "else",
+    "  echo '⚠️  Warning: link-shared.sh not found'",
+    "  echo '💡 Run this command manually: bash scripts/link-shared.sh'",
+    "fi",
+    "echo '✅ ULM worktree ready!'"
+  ]
+}
+
+

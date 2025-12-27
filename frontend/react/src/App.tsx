@@ -153,28 +153,38 @@ function AppContent() {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const token = localStorage.getItem('ulm_token');
-      const refreshToken = localStorage.getItem('ulm_refresh_token');
-      
-      // If no tokens at all, skip auth check
-      if (!token || !refreshToken) {
-        localStorage.removeItem('ulm_token');
-        localStorage.removeItem('ulm_refresh_token');
-        setLoading(false);
-        setIsLoggedIn(false);
-        return;
-      }
-      
       try {
-        const response = await api.get('/api/v1/auth/me');
-        setUserInfo(response.data);
-        setIsLoggedIn(true);
-      } catch (err) {
-        // Clear both tokens on auth failure
+        const token = localStorage.getItem('ulm_token');
+        const refreshToken = localStorage.getItem('ulm_refresh_token');
+        
+        // If no tokens at all, skip auth check
+        if (!token || !refreshToken) {
+          localStorage.removeItem('ulm_token');
+          localStorage.removeItem('ulm_refresh_token');
+          setLoading(false);
+          setIsLoggedIn(false);
+          return;
+        }
+        
+        try {
+          const response = await api.get('/api/v1/auth/me');
+          setUserInfo(response.data);
+          setIsLoggedIn(true);
+        } catch (err) {
+          // Clear both tokens on auth failure
+          console.log('Auth check failed, clearing tokens');
+          localStorage.removeItem('ulm_token');
+          localStorage.removeItem('ulm_refresh_token');
+          setIsLoggedIn(false);
+        } finally {
+          setLoading(false);
+        }
+      } catch (error) {
+        // Catch any unexpected errors
+        console.error('Unexpected error in checkAuth:', error);
         localStorage.removeItem('ulm_token');
         localStorage.removeItem('ulm_refresh_token');
         setIsLoggedIn(false);
-      } finally {
         setLoading(false);
       }
     };

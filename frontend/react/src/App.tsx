@@ -403,24 +403,24 @@ function AppContent() {
   return (
     <div className="app-layout" dir={language === 'he' ? 'rtl' : 'ltr'}>
       <OVUSidebar
-        currentApp="ulm"
-        language={language}
-        theme={theme}
-        user={userInfo ? {
-          id: userInfo.id,
-          username: userInfo.username,
-          email: userInfo.email,
-          role: userInfo.role,
-        } : undefined}
-        onAppSwitch={(app) => {
-          if (app.frontendUrl) {
-            window.location.href = app.frontendUrl;
-          }
+        config={{
+          currentApp: 'ulm',
+          language,
+          theme,
+          currentUser: {
+            name: userInfo?.username || 'User',
+            role: userInfo?.role || 'User',
+          },
+          onAppSwitch: (app) => {
+            if (app.frontendUrl) {
+              window.location.href = app.frontendUrl;
+            }
+          },
+          onNavigate: (path) => navigate(path),
+          onLogout: handleLogout,
+          onToggleTheme: toggleTheme,
+          onToggleLanguage: toggleLanguage
         }}
-        onMenuItemClick={(item) => {
-          navigate(item.path);
-        }}
-        onLogout={handleLogout}
       />
 
       <div className="main-layout">

@@ -16,31 +16,7 @@
   max-height: 100vh;
   overflow: hidden;
   transition: margin 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-[dir="rtl"] .main-layout {
-  margin-right: 280px;
-  margin-left: 0;
-}
-
-[dir="ltr"] .main-layout {
-  margin-left: 280px;
-  margin-right: 0;
-}
-
-/* When sidebar is collapsed - FIXED MARGIN */
-.app-layout:has(.sidebar.collapsed) .main-layout {
-  margin-inline-start: 80px;
-}
-
-[dir="rtl"] .app-layout:has(.sidebar.collapsed) .main-layout {
-  margin-right: 80px;
-  margin-left: 0;
-}
-
-[dir="ltr"] .app-layout:has(.sidebar.collapsed) .main-layout {
-  margin-left: 80px;
-  margin-right: 0;
+  margin: 0; /* sidebar already occupies width via flex; avoid double spacing */
 }
 
 /* App Header - FIXED HEIGHT */
@@ -178,15 +154,15 @@
   .main-layout {
     margin-inline-start: 0 !important;
   }
-  
+
   [dir="rtl"] .main-layout {
     margin-right: 0 !important;
   }
-  
+
   [dir="ltr"] .main-layout {
     margin-left: 0 !important;
   }
-  
+
   .app-header {
     padding: 0 20px;
   }
@@ -194,21 +170,21 @@
   .header-title {
     font-size: 16px;
   }
-  
+
   .user-info {
     display: none;
   }
-  
+
   .header-controls {
     gap: 8px;
   }
-  
+
   .control-btn {
     min-width: 32px;
     padding: 0 8px;
     font-size: 13px;
   }
-  
+
   .main-container::-webkit-scrollbar {
     width: 8px;
   }

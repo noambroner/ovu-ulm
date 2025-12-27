@@ -1,5 +1,4 @@
 // Export all components
-export { Sidebar } from './Sidebar/Sidebar';
 export { Dashboard } from './Dashboard/Dashboard';
 export { LoginPage } from './LoginPage/LoginPage';
 export { Layout } from './Layout/Layout';

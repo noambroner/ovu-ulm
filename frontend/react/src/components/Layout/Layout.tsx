@@ -1,5 +1,4 @@
 import { type ReactNode } from 'react';
-import { Sidebar } from '../Sidebar/Sidebar';
 import './Layout.css';
 import type { MenuItem, Theme, Language, UserInfo } from '../types';
 
@@ -24,13 +23,13 @@ interface LayoutProps {
 
 export const Layout = ({
   children,
-  menuItems,
-  currentPath,
+  menuItems: _menuItems,
+  currentPath: _currentPath,
   language,
   theme,
   userInfo,
   headerTitle,
-  onNavigate,
+  onNavigate: _onNavigate,
   onToggleTheme,
   onToggleLanguage,
   onLogout,
@@ -38,14 +37,8 @@ export const Layout = ({
 }: LayoutProps) => {
   return (
     <div className="app-layout" dir={language === 'he' ? 'rtl' : 'ltr'}>
-      <Sidebar
-        menuItems={menuItems}
-        currentPath={currentPath}
-        language={language}
-        theme={theme}
-        onNavigate={onNavigate}
-      />
-      
+      {/* Sidebar removed - using @ovu/sidebar in App.tsx instead */}
+
       <div className="main-layout">
         <header className="app-header">
           <h1 className="header-title">{headerTitle}</h1>

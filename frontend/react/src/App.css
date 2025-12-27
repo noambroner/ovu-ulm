@@ -24,14 +24,14 @@ html, body {
   --primary-color: #3b82f6;
   --primary-hover: #2563eb;
   --primary-light: #60a5fa;
-  
+
   /* Light Mode Colors */
   --bg-color-light: #f8fafc;
   --surface-color-light: #ffffff;
   --text-color-light: #1e293b;
   --text-secondary-light: #64748b;
   --border-color-light: rgba(0, 0, 0, 0.1);
-  
+
   /* Dark Mode Colors */
   --bg-color-dark: #0f172a;
   --surface-color-dark: #1e293b;
@@ -430,16 +430,16 @@ body {
   .app-header {
     padding: 12px 20px;
   }
-  
+
   .header-title {
     font-size: 16px;
     padding: 6px 16px;
   }
-  
+
   .login-card {
     padding: 32px 24px;
   }
-  
+
   .main-content {
     padding: 20px 16px;
   }
@@ -450,17 +450,17 @@ body {
     font-size: 14px;
     padding: 6px 12px;
   }
-  
+
   .control-btn {
     min-width: 32px;
     height: 28px;
     font-size: 13px;
   }
-  
+
   .login-card {
     padding: 24px 20px;
   }
-  
+
   .logo-icon {
     width: 64px;
     height: 64px;
@@ -479,18 +479,8 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  margin-inline-start: 280px;
+  margin: 0; /* sidebar occupies flex space automatically */
   transition: margin 0.3s ease;
-}
-
-[dir="rtl"] .main-layout {
-  margin-right: 280px;
-  margin-left: 0;
-}
-
-[dir="ltr"] .main-layout {
-  margin-left: 280px;
-  margin-right: 0;
 }
 
 .dashboard-container {
@@ -551,11 +541,11 @@ body {
   .main-layout {
     margin-inline-start: 0;
   }
-  
+
   [dir="rtl"] .main-layout {
     margin-right: 0;
   }
-  
+
   [dir="ltr"] .main-layout {
     margin-left: 0;
   }
@@ -719,13 +709,13 @@ body {
   .login-card {
     padding: 32px 24px;
   }
-  
+
   .logo-icon {
     width: 80px;
     height: 80px;
     font-size: 40px;
   }
-  
+
   .login-title {
     font-size: 24px;
   }
